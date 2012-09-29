@@ -1,0 +1,9 @@
+
+[Desktop Entry]
+Type=Application
+Terminal=false
+Exec=psnotes
+Name=P.S. Notes
+Comment=Notes, plain and simple
+Icon=psnotes
+Name[en_US]=psnotes
