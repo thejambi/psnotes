@@ -104,9 +104,6 @@ public class Main : Window {
 		menuDecreaseFontSize.activate.connect(() => {
 			this.decreaseFontSize();
 		});
-		// var menuUnlockEntry = new MenuItem.with_label("Unlock entry");
-		// menuUnlockEntry.activate.connect(() => { this.unlockEntry(); });
-		// settingsMenu.append(menuUnlockEntry);
 		settingsMenu.append(menuIncreaseFontSize);
 		settingsMenu.append(menuDecreaseFontSize);
 
