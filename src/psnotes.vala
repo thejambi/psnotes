@@ -22,7 +22,7 @@ using Gtk;
 public class Main : Window {
 
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
-	private const bool isInstalled = true;
+	private const bool isInstalled = false;
 
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
@@ -384,6 +384,7 @@ public class Main : Window {
 	}
 
 	private void createNewNote() {
+		this.seldomSave();
 		this.note = new Note("NEW NOTE");
 		this.loadNotesList();
 		this.needsSave = true;
