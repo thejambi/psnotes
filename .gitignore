@@ -1,3 +1,5 @@
+/.anjuta_sym_db.db
+/.anjuta/session/dock-layout.xml
 /src/psnotes.vala~
 /src/FileUtility.c
 /src/FileUtility.o
