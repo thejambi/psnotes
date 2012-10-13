@@ -52,6 +52,27 @@ class FileUtility : GLib.Object {
 		return Path.build_path(Path.DIR_SEPARATOR_S, pathStart, pathEnd);
 	}
 
+	public static bool isDuplicateNoteTitle(string title) {
+		try {
+			File notesDir = File.new_for_path(UserData.notesDirPath);
+			FileEnumerator enumerator = notesDir.enumerate_children(FILE_ATTRIBUTE_STANDARD_NAME, 0);
+			FileInfo fileInfo;
+
+			// Go through the files
+			while((fileInfo = enumerator.next_file()) != null) {
+				if (FileUtility.getFileExtension(fileInfo) == ".txt"
+						&& FileUtility.getFileNameWithoutExtension(fileInfo) == title) {
+					return true;
+				}
+			}
+		} catch(Error e) {
+			stderr.printf ("Error reading note titles: %s\n", e.message);
+			return true;
+		}
+
+		return false;
+	}
+
 	/**
 	 * 
 	 */

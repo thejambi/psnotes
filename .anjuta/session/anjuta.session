@@ -7,6 +7,9 @@ Geometry=1366x744+0+24
 Shortcut=psnotes//src//psnotes
 Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes
 
+[File Loader]
+Files=../../src/psnotes.vala#20%%%../../src/FileUtility.vala#73%%%../../src/UserData.vala#45%%%../../src/Note.vala#49
+
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
 

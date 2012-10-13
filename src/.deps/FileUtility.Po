@@ -258,7 +258,12 @@ FileUtility.o: FileUtility.c /usr/include/glib-2.0/glib.h \
  /usr/include/glib-2.0/gio/gremoteactiongroup.h \
  /usr/include/glib-2.0/gio/gmenumodel.h /usr/include/glib-2.0/gio/gmenu.h \
  /usr/include/glib-2.0/gio/gmenuexporter.h \
- /usr/include/glib-2.0/gio/gdbusmenumodel.h
+ /usr/include/glib-2.0/gio/gdbusmenumodel.h /usr/include/stdio.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/include/i386-linux-gnu/bits/stdio_lim.h \
+ /usr/include/i386-linux-gnu/bits/sys_errlist.h \
+ /usr/include/i386-linux-gnu/bits/stdio.h \
+ /usr/include/i386-linux-gnu/bits/stdio2.h
 
 /usr/include/glib-2.0/glib.h:
 
@@ -851,3 +856,19 @@ FileUtility.o: FileUtility.c /usr/include/glib-2.0/glib.h \
 /usr/include/glib-2.0/gio/gmenuexporter.h:
 
 /usr/include/glib-2.0/gio/gdbusmenumodel.h:
+
+/usr/include/stdio.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/include/i386-linux-gnu/bits/stdio_lim.h:
+
+/usr/include/i386-linux-gnu/bits/sys_errlist.h:
+
+/usr/include/i386-linux-gnu/bits/stdio.h:
+
+/usr/include/i386-linux-gnu/bits/stdio2.h:

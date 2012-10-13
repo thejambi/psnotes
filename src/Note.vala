@@ -46,8 +46,11 @@ public class Note : GLib.Object {
 	}
 
 	public void rename(string title, string text) {
-		this.removeNoteFile();
-		this.setNoteInfo(title);
+		// Only rename file if no duplicate.
+		if (!FileUtility.isDuplicateNoteTitle(title)) {
+			this.removeNoteFile();
+			this.setNoteInfo(title);
+		}
 		this.saveFileContents(text);
 	}
 
