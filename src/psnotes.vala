@@ -22,10 +22,12 @@ using Gtk;
 public class Main : Window {
 
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
-	private const bool isInstalled = false;
+	private const bool isInstalled = true;
 
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
+			"Ctrl+F: Jump to filter box to search note titles\n" + 
+			"Escape: Jump to filter box / clear filter box\n" +
 			"Ctrl+O: Choose notes folder\n" + 
 			"Ctrl+=: Increase font size\n" + 
 			"Ctrl+-: Decrease font size\n" + 
@@ -90,7 +92,7 @@ public class Main : Window {
 		notesMenu.append(new SeparatorMenuItem());
 		notesMenu.append(menuClose);
 
-		MenuItem notesMenuItem = new MenuItem.with_label("Notes");
+		Gtk.MenuItem notesMenuItem = new MenuItem.with_label("Notes");
 		notesMenuItem.set_submenu(notesMenu);
 		menubar.append(notesMenuItem);
 
@@ -107,7 +109,7 @@ public class Main : Window {
 		settingsMenu.append(menuIncreaseFontSize);
 		settingsMenu.append(menuDecreaseFontSize);
 
-		MenuItem settingsMenuItem = new MenuItem.with_label("Settings");
+		Gtk.MenuItem settingsMenuItem = new MenuItem.with_label("Settings");
 		settingsMenuItem.set_submenu(settingsMenu);
 		menubar.append(settingsMenuItem);
 
@@ -129,6 +131,13 @@ public class Main : Window {
 		menubar.append(helpMenuItem);
 
 		this.txtFilter = new Entry();
+
+		this.txtFilter.buffer.deleted_text.connect(() => {
+			this.loadNotesList();
+		});
+		this.txtFilter.buffer.inserted_text.connect(() => {
+			this.loadNotesList();
+		});
 
 		this.notesView = new TreeView();
 		this.setupNotesView();
@@ -156,8 +165,8 @@ public class Main : Window {
 		scroll1.expand = true;
 
 		var vbox = new Box(Orientation.VERTICAL, 2);
-		// vbox.pack_start(txtFilter, false, true, 2);
-		// vbox.pack_start(this.notesView, true, true, 2);
+		vbox.pack_start(txtFilter, false, true, 2);
+		vbox.pack_start(this.notesView, true, true, 2);
 		vbox.pack_start(scroll1, true, true, 2);
 
 		var scroll = new ScrolledWindow (null, null);
@@ -177,6 +186,8 @@ public class Main : Window {
 		vbox1.pack_start (paned, true, true, 2);
 
 		add (vbox1);
+
+		this.noteTextView.grab_focus();
 
 		this.startingFontSize = 10;
 		this.fontSize = startingFontSize;
@@ -206,6 +217,7 @@ public class Main : Window {
 	}
 
 	private void loadNotesList() {
+		Zystem.debug("Loading Notes List!");
 		this.loadingNotes = true;
 
 		try {
@@ -223,9 +235,12 @@ public class Main : Window {
 			while((fileInfo = enumerator.next_file()) != null) {
 				string filename = fileInfo.get_name();
 				if (FileUtility.getFileExtension(fileInfo) == ".txt") {
-					Zystem.debug(FileUtility.getFileNameWithoutExtension(fileInfo));
-					listmodel.append(out iter);
-					listmodel.set(iter, 0, FileUtility.getFileNameWithoutExtension(fileInfo));
+					// Zystem.debug(FileUtility.getFileNameWithoutExtension(fileInfo));
+					string name = FileUtility.getFileNameWithoutExtension(fileInfo);
+					if (this.txtFilter.text.down() in name.down()) {
+						listmodel.append(out iter);
+						listmodel.set(iter, 0, name);
+					}
 				}
 			}
 		} catch(Error e) {
@@ -303,6 +318,9 @@ public class Main : Window {
 				case "d":
 					// this.editor.prependDateToEntry(this.entry.getEntryDateHeading());
 					break;
+				case "f":
+					this.txtFilter.grab_focus();
+					break;
 				case "n":
 					this.createNewNote();
 					break;
@@ -332,6 +350,15 @@ public class Main : Window {
 					break;
 				default:
 					break;
+			}
+		}
+
+		// Handle escape key
+		if (!(ctrl || shift) && keyName == "Escape") {
+			if (this.txtFilter.has_focus) {
+				this.txtFilter.text = "";
+			} else {
+				this.txtFilter.grab_focus();
 			}
 		}
 
