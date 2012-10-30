@@ -69,20 +69,20 @@ public class Main : Window {
 		var menubar = new MenuBar();
 		
 		// Set up Notes menu
-		var notesMenu = new Menu();
-		var menuNewNote = new MenuItem.with_label("New Note");
+		var notesMenu = new Gtk.Menu();
+		var menuNewNote = new Gtk.MenuItem.with_label("New Note");
 		menuNewNote.activate.connect(() => {
 			this.createNewNote();
 		});
-		var menuChangeNotesDir = new MenuItem.with_label("Change Notes Folder");
+		var menuChangeNotesDir = new Gtk.MenuItem.with_label("Change Notes Folder");
 		menuChangeNotesDir.activate.connect(() => {
 			changeNotesDir();
 		});
-		var menuOpenNotesLocation = new MenuItem.with_label("View Notes Files");
+		var menuOpenNotesLocation = new Gtk.MenuItem.with_label("View Notes Files");
 		menuOpenNotesLocation.activate.connect(() => {
 			openNotesLocation();
 		});
-		var menuClose = new MenuItem.with_label("Close P.S. Notes.");
+		var menuClose = new Gtk.MenuItem.with_label("Close P.S. Notes.");
 		menuClose.activate.connect(() => {
 			this.on_destroy();
 		});
@@ -92,41 +92,41 @@ public class Main : Window {
 		notesMenu.append(new SeparatorMenuItem());
 		notesMenu.append(menuClose);
 
-		Gtk.MenuItem notesMenuItem = new MenuItem.with_label("Notes");
+		Gtk.MenuItem notesMenuItem = new Gtk.MenuItem.with_label("Notes");
 		notesMenuItem.set_submenu(notesMenu);
 		menubar.append(notesMenuItem);
 
 		// Set up Settings menu
-		var settingsMenu = new Menu();
-		var menuIncreaseFontSize = new MenuItem.with_label("Increase font size");
+		var settingsMenu = new Gtk.Menu();
+		var menuIncreaseFontSize = new Gtk.MenuItem.with_label("Increase font size");
 		menuIncreaseFontSize.activate.connect(() => {
 			this.increaseFontSize();
 		});
-		var menuDecreaseFontSize = new MenuItem.with_label("Decrease font size");
+		var menuDecreaseFontSize = new Gtk.MenuItem.with_label("Decrease font size");
 		menuDecreaseFontSize.activate.connect(() => {
 			this.decreaseFontSize();
 		});
 		settingsMenu.append(menuIncreaseFontSize);
 		settingsMenu.append(menuDecreaseFontSize);
 
-		Gtk.MenuItem settingsMenuItem = new MenuItem.with_label("Settings");
+		Gtk.MenuItem settingsMenuItem = new Gtk.MenuItem.with_label("Settings");
 		settingsMenuItem.set_submenu(settingsMenu);
 		menubar.append(settingsMenuItem);
 
 		// Set up Help menu
-		var helpMenu = new Menu();
-		var menuKeyboardShortcuts = new MenuItem.with_label("Keyboard Shortcuts");
+		var helpMenu = new Gtk.Menu();
+		var menuKeyboardShortcuts = new Gtk.MenuItem.with_label("Keyboard Shortcuts");
 		menuKeyboardShortcuts.activate.connect(() => {
 			showKeyboardShortcuts();
 		});
-		var menuAbout = new MenuItem.with_label("About P.S. Notes.");
+		var menuAbout = new Gtk.MenuItem.with_label("About P.S. Notes.");
 		menuAbout.activate.connect(() => {
 			this.menuAboutClicked();
 		});
 		helpMenu.append(menuKeyboardShortcuts);
 		helpMenu.append(menuAbout);
 
-		MenuItem helpMenuItem = new MenuItem.with_label("Help");
+		var helpMenuItem = new Gtk.MenuItem.with_label("Help");
 		helpMenuItem.set_submenu(helpMenu);
 		menubar.append(helpMenuItem);
 
@@ -299,7 +299,7 @@ public class Main : Window {
 			Zystem.debug("Ctrl+Shift+" + keyName);
 			switch (keyName) {
 				case "Z":
-					// this.editor.redo();
+					this.editor.redo();
 					Zystem.debug("Y'all hit Ctrl+Shift+Z");
 					break;
 				default:
@@ -310,10 +310,10 @@ public class Main : Window {
 		else if (ctrl) { // Ctrl+?
 			switch (keyName) {
 				case "z":
-					// this.editor.undo();
+					this.editor.undo();
 					break;
 				case "y":
-					// this.editor.redo();
+					this.editor.redo();
 					break;
 				case "d":
 					// this.editor.prependDateToEntry(this.entry.getEntryDateHeading());

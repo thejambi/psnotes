@@ -64,7 +64,7 @@ public class Note : GLib.Object {
 
 	private async void saveFileContentsAsync(string text) throws GLib.Error {
 		Zystem.debug("ACTUALLY SAVING FILE");
-		yield this.noteFile.replace_contents_async(text, text.length, null, false, FileCreateFlags.NONE, null, null);
+		yield this.noteFile.replace_contents_async(text.data, null, false, FileCreateFlags.NONE, null, null);
 	}
 
 	public void save(string text) throws GLib.Error {
@@ -77,7 +77,8 @@ public class Note : GLib.Object {
 
 	private void saveFileContents(string text) throws GLib.Error {
 		Zystem.debug("ACTUALLY SAVING FILE");
-		this.noteFile.replace_contents(text, text.length, null, false, FileCreateFlags.NONE, null, null);
+		// this.noteFile.replace_contents(text, text.length, null, false, FileCreateFlags.NONE, null, null);
+		this.noteFile.replace_contents(text.data, null, false, FileCreateFlags.NONE, null, null);
 	}
 
 	private void removeNoteFile() {

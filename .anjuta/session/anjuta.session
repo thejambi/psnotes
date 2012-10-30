@@ -1,16 +1,16 @@
-
 [Anjuta]
-Geometry=1189x685+47+26
-
-[Project Manager]
-Shortcut=psnotes//src//psnotes
-Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes
+Maximized=1
+Geometry=1317x744+49+24
 
 [File Loader]
-Files=../../src/psnotes.vala#5%%%../../src/FileUtility.vala#73%%%../../src/UserData.vala#45%%%../../src/Note.vala#47
+Files=../../src/psnotes.vala#22%%%../../src/FileUtility.vala#73%%%../../src/UserData.vala#45%%%../../src/Note.vala#67%%%../../src/NoteEditor.vala#181
 
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
+
+[Project Manager]
+Shortcut=psnotes//src//psnotes
+Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes%%%psnotes//PSNOTES
 
 [Execution]
 Program uri=../../src/psnotes

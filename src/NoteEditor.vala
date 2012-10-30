@@ -130,12 +130,13 @@ public class NoteEditor : GLib.Object {
 	}
 
 	public void append(string text) {
-		this.buffer.insert(this.getEndIter(), text, text.length);
+		TextIter iter = this.getEndIter();
+		this.buffer.insert(ref iter, text, text.length);
 	}
 
 	public void prepend(string text) {
 		TextIter startIter = this.getStartIter();
-		this.buffer.insert(startIter, text, text.length);
+		this.buffer.insert(ref startIter, text, text.length);
 	}
 
 	public void prependDateToEntry(string dateHeading) {
@@ -146,7 +147,7 @@ public class NoteEditor : GLib.Object {
 
 	public void insertAtCursor(string text) {
 		TextIter startIter = this.getCurrentIter();
-		this.buffer.insert(startIter, text, text.length);
+		this.buffer.insert(ref startIter, text, text.length);
 	}
 
 	public void cursorToEnd() {
@@ -187,12 +188,12 @@ public class NoteEditor : GLib.Object {
 		if (action.action == "delete") {
 			TextIter start = this.getIterAtOffset(action.offset);
 			TextIter end = this.getIterAtOffset(action.offset + action.text.length);
-			this.buffer.delete(start, end);
+			this.buffer.delete(ref start, ref end);
 			action.action = "insert";
 		} else if (action.action == "insert") {
 			TextIter start = this.getIterAtOffset(action.offset);
 			TextIter end = this.getIterAtOffset(action.offset + action.text.length);
-			this.buffer.insert(start, action.text, action.text.length);
+			this.buffer.insert(ref start, action.text, action.text.length);
 			action.action = "delete";
 		}
 
