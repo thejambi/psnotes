@@ -17,7 +17,7 @@ AM_CFLAGS =\
 bin_PROGRAMS = psnotes
 
 psnotes_SOURCES = \
-	psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala
+	psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala NotesFilter.vala
 
 psnotes_VALAFLAGS =  --pkg glib-2.0 --pkg gee-1.0 --pkg gtk+-3.0  \
 	--pkg gtk+-3.0

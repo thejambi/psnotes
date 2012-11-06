@@ -49,6 +49,7 @@ public class Main : Window {
 	private TreeView notesView;
 	private TextView noteTextView;
 	private NoteEditor editor;
+	private NotesFilter filter;
 
 	/** 
 	 * Constructor for main P.S. Notes window.
@@ -207,6 +208,8 @@ public class Main : Window {
 
 		this.notesView.insert_column_with_attributes (-1, "Notes", new CellRendererText (), "text", 0);
 
+		this.filter = new NotesFilter(listmodel);
+
 		this.loadNotesList();
 
 		var treeSelection = this.notesView.get_selection();
@@ -216,36 +219,11 @@ public class Main : Window {
 		});
 	}
 
-	private void loadNotesList() {
+	private void loadNotesList() {		
 		Zystem.debug("Loading Notes List!");
 		this.loadingNotes = true;
 
-		try {
-			var listmodel = this.notesView.model as ListStore;
-			listmodel.clear();
-			listmodel.set_sort_column_id(0, SortType.ASCENDING);
-			var notesList = new GLib.List<string>();
-			TreeIter iter;
-
-			File notesDir = File.new_for_path(UserData.notesDirPath);
-			FileEnumerator enumerator = notesDir.enumerate_children(FILE_ATTRIBUTE_STANDARD_NAME, 0);
-			FileInfo fileInfo;
-
-			// Go through the files
-			while((fileInfo = enumerator.next_file()) != null) {
-				string filename = fileInfo.get_name();
-				if (FileUtility.getFileExtension(fileInfo) == ".txt") {
-					// Zystem.debug(FileUtility.getFileNameWithoutExtension(fileInfo));
-					string name = FileUtility.getFileNameWithoutExtension(fileInfo);
-					if (this.txtFilter.text.down() in name.down()) {
-						listmodel.append(out iter);
-						listmodel.set(iter, 0, name);
-					}
-				}
-			}
-		} catch(Error e) {
-			stderr.printf ("Error loading notes list: %s\n", e.message);
-		}
+		this.filter.filter(this.txtFilter.text);
 
 		this.loadingNotes = false;
 	}

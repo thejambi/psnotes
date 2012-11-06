@@ -54,7 +54,7 @@ host_triplet = @host@
 bin_PROGRAMS = psnotes$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	FileUtility.c Note.c NoteEditor.c UserData.c \
+	FileUtility.c Note.c NoteEditor.c NotesFilter.c UserData.c \
 	UserSettingsManager.c Zystem.c psnotes.c psnotes_vala.stamp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -68,7 +68,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_psnotes_OBJECTS = psnotes.$(OBJEXT) FileUtility.$(OBJEXT) \
 	Note.$(OBJEXT) NoteEditor.$(OBJEXT) UserData.$(OBJEXT) \
-	UserSettingsManager.$(OBJEXT) Zystem.$(OBJEXT)
+	UserSettingsManager.$(OBJEXT) Zystem.$(OBJEXT) \
+	NotesFilter.$(OBJEXT)
 psnotes_OBJECTS = $(am_psnotes_OBJECTS)
 am__DEPENDENCIES_1 =
 psnotes_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -252,7 +253,7 @@ AM_CFLAGS = \
 	 -g
 
 psnotes_SOURCES = \
-	psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala
+	psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala NotesFilter.vala
 
 psnotes_VALAFLAGS = --pkg glib-2.0 --pkg gee-1.0 --pkg gtk+-3.0  \
 	--pkg gtk+-3.0
@@ -354,6 +355,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileUtility.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Note.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NoteEditor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NotesFilter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UserData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UserSettingsManager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Zystem.Po@am__quote@
@@ -414,9 +416,14 @@ $(srcdir)/Zystem.c: $(srcdir)/psnotes_vala.stamp
 	@if test -f $@; then :; else \
 	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/psnotes_vala.stamp; \
 	fi
-$(srcdir)/psnotes_vala.stamp: psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala
+$(srcdir)/NotesFilter.c: $(srcdir)/psnotes_vala.stamp
+	@if test -f $@; then :; else rm -f $(srcdir)/psnotes_vala.stamp; fi
+	@if test -f $@; then :; else \
+	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/psnotes_vala.stamp; \
+	fi
+$(srcdir)/psnotes_vala.stamp: psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala NotesFilter.vala
 	$(AM_V_at)rm -f $@ && echo stamp > $@-t
-	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(psnotes_VALAFLAGS) $(VALAFLAGS) -C psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala
+	$(AM_V_VALAC)$(am__cd) $(srcdir) && $(VALAC) $(psnotes_VALAFLAGS) $(VALAFLAGS) -C psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala UserData.vala UserSettingsManager.vala Zystem.vala NotesFilter.vala
 	$(AM_V_at)mv -f $@-t $@
 
 mostlyclean-libtool:
@@ -547,6 +554,7 @@ maintainer-clean-generic:
 	-rm -f FileUtility.c
 	-rm -f Note.c
 	-rm -f NoteEditor.c
+	-rm -f NotesFilter.c
 	-rm -f UserData.c
 	-rm -f UserSettingsManager.c
 	-rm -f Zystem.c
