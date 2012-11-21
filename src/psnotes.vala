@@ -22,7 +22,7 @@ using Gtk;
 public class Main : Window {
 
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
-	private const bool isInstalled = true;
+	private const bool isInstalled = false;
 
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
@@ -33,6 +33,9 @@ public class Main : Window {
 			"Ctrl+-: Decrease font size\n" + 
 			"Ctrl+0: Reset font size";
 
+	private int width;
+	private int height;
+	
 	private Note note;
 
 	private int startingFontSize;
@@ -64,7 +67,13 @@ public class Main : Window {
 
 		this.title = "P.S. Notes.";
 		this.window_position = WindowPosition.CENTER;
-		set_default_size(530, 400);
+		set_default_size(UserData.windowWidth, UserData.windowHeight);
+
+		this.configure_event.connect(() => {
+			// Record window size
+			this.get_size(out this.width, out this.height);
+			return false;
+		});
 
 		// Create menu
 		var menubar = new MenuBar();
@@ -476,7 +485,7 @@ public class Main : Window {
 		var about = new AboutDialog();
 		about.set_program_name("P.S. Notes.");
 		about.comments = "Notes, plain and simple.";
-		about.website = "http://zburnham.co.cc/";
+		about.website = "http://zachburnham.wordpress.com/";
 		about.logo_icon_name = "psnotes";
 		about.set_copyright("by Zach Burnham");
 		about.run();
@@ -484,7 +493,7 @@ public class Main : Window {
 	}
 
 	/**
-	 * Quit DayNotes.
+	 * Quit P.S. Notes.
 	 */
 	public void on_destroy () {
 		if (UserData.seldomSave && this.needsSave) {
@@ -496,6 +505,11 @@ public class Main : Window {
 			// 	Zystem.debug("There was an error saving the file.");
 			// }
 		}
+
+		// Save window size
+		Zystem.debug("Width and height: " + this.width.to_string() + " and " + this.height.to_string());
+		UserData.saveWindowSize(this.width, this.height);
+		
 		Gtk.main_quit();
 	}
 

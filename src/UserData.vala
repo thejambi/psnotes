@@ -29,6 +29,9 @@ class UserData : Object {
 
 	public static bool seldomSave { get; set; default = true; }
 
+	public static int windowWidth { get; set; default = 530; }
+	public static int windowHeight { get; set; default = 400; }
+
 	private static UserSettingsManager settings;
 
 	public static void initializeUserData() {
@@ -38,6 +41,9 @@ class UserData : Object {
 		defaultNotesDirName = "PS Notes";
 
 		settings = new UserSettingsManager();
+
+		Zystem.debug("Width is: " + windowWidth.to_string());
+		
 
 		// Create Notes Directory
 		FileUtility.createFolder(notesDirPath);
@@ -58,6 +64,12 @@ class UserData : Object {
 		string newSectionText = "\n\n-----\n\n";
 
 		return newSectionText;
+	}
+
+	public static void saveWindowSize(int width, int height) {
+		Zystem.debug(width.to_string() + " and the height: " + height.to_string());
+		settings.setInt(UserSettingsManager.windowWidthKey, width);
+		settings.setInt(UserSettingsManager.windowHeightKey, height);
 	}
 
 	

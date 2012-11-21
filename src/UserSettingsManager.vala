@@ -25,6 +25,9 @@ public class UserSettingsManager : GLib.Object {
 
 	public static const string notesDirKey = "notesDirectory";
 	public static const string notesDirGroup = "PSNotes";
+	
+	public static const string windowWidthKey = "width";
+	public static const string windowHeightKey = "height";
 
 	// Constructor
 	public UserSettingsManager () {
@@ -76,6 +79,13 @@ public class UserSettingsManager : GLib.Object {
 			Zystem.debug("Gotta use the default...");
 		}
 
+		try {
+			UserData.windowWidth = keyFile.get_integer(this.notesDirGroup, this.windowWidthKey);
+			UserData.windowHeight = keyFile.get_integer(this.notesDirGroup, this.windowHeightKey);
+		} catch (KeyFileError e) {
+			Zystem.debug("Error loading window size; using defualt.");
+		}
+
 		// Return true if the keyFile data has been updated (if it's no longer the same as it was)
 		return originalKeyFileData != keyFile.to_data();
 	}
@@ -93,6 +103,11 @@ public class UserSettingsManager : GLib.Object {
 
 	public void setNotesDir(string path) {
 		keyFile.set_string(this.notesDirGroup, this.notesDirKey, path);
+		writeKeyFile();
+	}
+
+	public void setInt(string key, int val) {
+		keyFile.set_integer(this.notesDirGroup, key, val);
 		writeKeyFile();
 	}
 
