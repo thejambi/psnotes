@@ -28,6 +28,7 @@ public class UserSettingsManager : GLib.Object {
 	
 	public static const string windowWidthKey = "width";
 	public static const string windowHeightKey = "height";
+	public static const string panePositionKey = "panePosition";
 
 	// Constructor
 	public UserSettingsManager () {
@@ -82,6 +83,7 @@ public class UserSettingsManager : GLib.Object {
 		try {
 			UserData.windowWidth = keyFile.get_integer(this.notesDirGroup, this.windowWidthKey);
 			UserData.windowHeight = keyFile.get_integer(this.notesDirGroup, this.windowHeightKey);
+			UserData.panePosition = keyFile.get_integer(this.notesDirGroup, this.panePositionKey);
 		} catch (KeyFileError e) {
 			Zystem.debug("Error loading window size; using defualt.");
 		}

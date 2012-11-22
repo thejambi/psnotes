@@ -31,6 +31,7 @@ class UserData : Object {
 
 	public static int windowWidth { get; set; default = 530; }
 	public static int windowHeight { get; set; default = 400; }
+	public static int panePosition { get; set; default = 166; }
 
 	private static UserSettingsManager settings;
 
@@ -70,6 +71,10 @@ class UserData : Object {
 		Zystem.debug(width.to_string() + " and the height: " + height.to_string());
 		settings.setInt(UserSettingsManager.windowWidthKey, width);
 		settings.setInt(UserSettingsManager.windowHeightKey, height);
+	}
+
+	public static void savePanePosition(int position) {
+		settings.setInt(UserSettingsManager.panePositionKey, position);
 	}
 
 	

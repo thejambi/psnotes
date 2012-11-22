@@ -51,6 +51,7 @@ public class Main : Window {
 	private Entry txtFilter;
 	private TreeView notesView;
 	private TextView noteTextView;
+	private Paned paned;
 	private NoteEditor editor;
 	private NotesFilter filter;
 
@@ -187,9 +188,10 @@ public class Main : Window {
 		scroll.add (this.noteTextView);
 		scroll.expand = true;
 
-		var paned = new Paned(Orientation.HORIZONTAL);
+		this.paned = new Paned(Orientation.HORIZONTAL);
 		paned.add1(vbox);
 		paned.add2(scroll);
+		paned.position = UserData.panePosition;
 
 		var vbox1 = new Box (Orientation.VERTICAL, 0);
 		vbox1.pack_start(menubar, false, true, 0);
@@ -485,7 +487,7 @@ public class Main : Window {
 		var about = new AboutDialog();
 		about.set_program_name("P.S. Notes.");
 		about.comments = "Notes, plain and simple.";
-		about.website = "http://zachburnham.wordpress.com/";
+		about.website = "http://burnsoftware.wordpress.com/";
 		about.logo_icon_name = "psnotes";
 		about.set_copyright("by Zach Burnham");
 		about.run();
@@ -509,6 +511,10 @@ public class Main : Window {
 		// Save window size
 		Zystem.debug("Width and height: " + this.width.to_string() + " and " + this.height.to_string());
 		UserData.saveWindowSize(this.width, this.height);
+
+		// Save pane position
+		Zystem.debug("Pane position: " + this.paned.position.to_string());
+		UserData.savePanePosition(this.paned.position);
 		
 		Gtk.main_quit();
 	}
