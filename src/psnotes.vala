@@ -22,7 +22,7 @@ using Gtk;
 public class Main : Window {
 
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
-	private const bool isInstalled = false;
+	private const bool isInstalled = true;
 
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
@@ -55,6 +55,9 @@ public class Main : Window {
 	private NoteEditor editor;
 	private NotesFilter filter;
 
+	private NotesMonitor notesMonitor;
+	private FileMonitor fileMon;
+
 	/** 
 	 * Constructor for main P.S. Notes window.
 	 */
@@ -71,8 +74,12 @@ public class Main : Window {
 		set_default_size(UserData.windowWidth, UserData.windowHeight);
 
 		this.configure_event.connect(() => {
-			// Record window size
-			this.get_size(out this.width, out this.height);
+			// Record window size if not maximized
+			if (!(Gdk.WindowState.MAXIMIZED in this.get_window().get_state())) {
+				this.get_size(out this.width, out this.height);
+			} else {
+				Zystem.debug("Window maximized, no save window size!");
+			}
 			return false;
 		});
 
@@ -209,8 +216,26 @@ public class Main : Window {
 		this.key_press_event.connect((window,event) => { 
 			return this.onKeyPress(event); 
 		});
+		
 
+		this.monitorNotesDir();
+		
+		
+		// Connect on_destroy
 		this.destroy.connect(() => { this.on_destroy(); });
+	}
+
+	/**
+	 * Monitor the notes directory so we can auto-refresh notes list.
+	 */
+	private void monitorNotesDir() {
+		//this.notesMonitor = new NotesMonitor("/home/zach/Dropbox/epistle");
+		this.notesMonitor = new NotesMonitor(UserData.notesDirPath);
+		this.fileMon = notesMonitor.getFileMonitor();
+		this.fileMon.changed.connect(() => {
+			Zystem.debug("Notes directory has changed! Refresh the list eh!");
+			this.loadNotesList();
+		});
 	}
 
 	private void setupNotesView() {
@@ -369,7 +394,7 @@ public class Main : Window {
 			Zystem.debug("NOTE IS NULL, thank you very much!");
 			Zystem.debug("Note title should be: " + this.editor.firstLine());
 			this.note = new Note(this.editor.firstLine().strip());
-			this.loadNotesList();
+			//this.loadNotesList();
 		}
 
 		Zystem.debug("PAY ATTENTIONS TO MEEEEEEEEEEEEEE " + this.editor.firstLine().strip());
@@ -387,7 +412,7 @@ public class Main : Window {
 		}
 
 		if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
-			this.loadNotesList();
+			//this.loadNotesList();
 		}
 	}
 
@@ -402,7 +427,7 @@ public class Main : Window {
 	private void createNewNote() {
 		this.seldomSave();
 		this.note = new Note("NEW NOTE");
-		this.loadNotesList();
+		//this.loadNotesList();
 		this.needsSave = true;
 		this.editor.startNewNote(this.note.title);
 		this.noteTextView.select_all(true);
@@ -464,9 +489,8 @@ public class Main : Window {
 		if (fileChooser.run() == ResponseType.ACCEPT) {
 			string dirPath = fileChooser.get_filename();
 			UserData.setNotesDir(dirPath);
-			// this.setDjDirLocationMenuLabel();
-			// Open new entry for the selected date from the new location
 			this.loadNotesList();
+			this.monitorNotesDir();
 		}
 		fileChooser.destroy();
 	}
@@ -523,7 +547,6 @@ public class Main : Window {
 		Gtk.init(ref args);
 
 		var window = new Main();
-		window.destroy.connect(Gtk.main_quit);
 		window.show_all();
 
 		Gtk.main();

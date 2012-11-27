@@ -7,7 +7,7 @@ Shortcut=psnotes//src//psnotes
 Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes%%%psnotes//PSNOTES
 
 [File Loader]
-Files=../../src/psnotes.vala#25%%%../../src/UserSettingsManager.vala#86%%%../../src/UserData.vala#34
+Files=../../src/psnotes.vala#209%%%../../src/UserSettingsManager.vala#86%%%../../src/UserData.vala#35%%%../../src/NotesMonitor.vala#29
 
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
