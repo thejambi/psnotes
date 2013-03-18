@@ -1,13 +1,14 @@
+
 [Anjuta]
 Maximized=1
-Geometry=1366x744+0+24
+Geometry=1366x720+0+26
 
 [Project Manager]
 Shortcut=psnotes//src//psnotes
 Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes%%%psnotes//PSNOTES
 
 [File Loader]
-Files=../../src/psnotes.vala#209%%%../../src/UserSettingsManager.vala#86%%%../../src/UserData.vala#35%%%../../src/NotesMonitor.vala#29
+Files=../../src/psnotes.vala#25
 
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n

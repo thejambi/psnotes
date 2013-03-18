@@ -77,6 +77,10 @@ class UserData : Object {
 		settings.setInt(UserSettingsManager.panePositionKey, position);
 	}
 
+	public static string getArchivedNotesDir() {
+		return FileUtility.pathCombine(notesDirPath, "Archive");
+	}
+
 	
 
 	

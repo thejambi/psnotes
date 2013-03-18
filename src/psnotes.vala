@@ -22,7 +22,7 @@ using Gtk;
 public class Main : Window {
 
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
-	private const bool isInstalled = true;
+	private const bool isInstalled = false;
 
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
@@ -46,11 +46,11 @@ public class Main : Window {
 	private bool needsSave = false;
 	private bool isOpening = false;
 	private bool loadingNotes = false;
-	private bool firstLaunch = true;
 
 	private Entry txtFilter;
 	private TreeView notesView;
-	private TextView noteTextView;
+//	private TextView noteTextView;
+	private HyperTextView noteTextView;
 	private Paned paned;
 	private NoteEditor editor;
 	private NotesFilter filter;
@@ -83,70 +83,202 @@ public class Main : Window {
 			return false;
 		});
 
-		// Create menu
+
+
+
+
+		// Do I create toolbar or menu?
+		var textBgColor = new TextView().get_style_context().get_background_color(StateFlags.NORMAL);
+		var winBgColor = this.get_style_context().get_background_color(StateFlags.NORMAL);
+
+		bool elementaryHackTime = false;
+		
+		if (textBgColor.to_string() == winBgColor.to_string()) {
+			textBgColor = Gdk.RGBA();
+			textBgColor.parse("#FFFFFF");
+			Zystem.debug("Hi. Your theme was wrong so I am just using white for you to write on.");
+			elementaryHackTime = true;
+		} else {
+			Zystem.debug(textBgColor.to_string());
+			Zystem.debug(winBgColor.to_string());
+		}
+		
+		var toolbar = new Toolbar();
 		var menubar = new MenuBar();
 		
-		// Set up Notes menu
-		var notesMenu = new Gtk.Menu();
-		var menuNewNote = new Gtk.MenuItem.with_label("New Note");
-		menuNewNote.activate.connect(() => {
-			this.createNewNote();
-		});
-		var menuChangeNotesDir = new Gtk.MenuItem.with_label("Change Notes Folder");
-		menuChangeNotesDir.activate.connect(() => {
-			changeNotesDir();
-		});
-		var menuOpenNotesLocation = new Gtk.MenuItem.with_label("View Notes Files");
-		menuOpenNotesLocation.activate.connect(() => {
-			openNotesLocation();
-		});
-		var menuClose = new Gtk.MenuItem.with_label("Close P.S. Notes.");
-		menuClose.activate.connect(() => {
-			this.on_destroy();
-		});
-		notesMenu.append(menuNewNote);
-		notesMenu.append(menuChangeNotesDir);
-		notesMenu.append(menuOpenNotesLocation);
-		notesMenu.append(new SeparatorMenuItem());
-		notesMenu.append(menuClose);
+		if (elementaryHackTime) {
+			// Create toolbar
+			toolbar.set_style(ToolbarStyle.ICONS);
 
-		Gtk.MenuItem notesMenuItem = new Gtk.MenuItem.with_label("Notes");
-		notesMenuItem.set_submenu(notesMenu);
-		menubar.append(notesMenuItem);
+			var openButton = new ToolButton.from_stock(Stock.OPEN);
+			openButton.tooltip_text = "Change notes folder";
+			openButton.clicked.connect(() => {
+				this.changeNotesDir();
+			});
 
-		// Set up Settings menu
-		var settingsMenu = new Gtk.Menu();
-		var menuIncreaseFontSize = new Gtk.MenuItem.with_label("Increase font size");
-		menuIncreaseFontSize.activate.connect(() => {
-			this.increaseFontSize();
-		});
-		var menuDecreaseFontSize = new Gtk.MenuItem.with_label("Decrease font size");
-		menuDecreaseFontSize.activate.connect(() => {
-			this.decreaseFontSize();
-		});
-		settingsMenu.append(menuIncreaseFontSize);
-		settingsMenu.append(menuDecreaseFontSize);
+			var newButton = new ToolButton.from_stock(Stock.NEW);
+			newButton.tooltip_text = "New note";
+			newButton.clicked.connect(() => {
+				this.createNewNote();
+			});
 
-		Gtk.MenuItem settingsMenuItem = new Gtk.MenuItem.with_label("Settings");
-		settingsMenuItem.set_submenu(settingsMenu);
-		menubar.append(settingsMenuItem);
+//			var archiveButton = new ToolButton.from_stock(Stock.HARDDISK);
+			var archiveButton = new ToolButton.from_stock(Stock.JUMP_TO);
+//			var archiveButton = new ToolButton.from_stock(Stock.REVERT_TO_SAVED);
+//			var archiveButton = new ToolButton.from_stock(Stock.CONVERT);
+			archiveButton.tooltip_text = "Archive note";
+			archiveButton.clicked.connect(() => {
+				this.archiveActiveNote();
+			});
 
-		// Set up Help menu
-		var helpMenu = new Gtk.Menu();
-		var menuKeyboardShortcuts = new Gtk.MenuItem.with_label("Keyboard Shortcuts");
-		menuKeyboardShortcuts.activate.connect(() => {
-			showKeyboardShortcuts();
-		});
-		var menuAbout = new Gtk.MenuItem.with_label("About P.S. Notes.");
-		menuAbout.activate.connect(() => {
-			this.menuAboutClicked();
-		});
-		helpMenu.append(menuKeyboardShortcuts);
-		helpMenu.append(menuAbout);
+			var decreaseFontSizeButton = new ToolButton.from_stock(Stock.ZOOM_OUT);
+			decreaseFontSizeButton.tooltip_text = "Decrease font size";
+			decreaseFontSizeButton.clicked.connect(() => {
+				this.decreaseFontSize();
+			});
 
-		var helpMenuItem = new Gtk.MenuItem.with_label("Help");
-		helpMenuItem.set_submenu(helpMenu);
-		menubar.append(helpMenuItem);
+			var increaseFontSizeButton = new ToolButton.from_stock(Stock.ZOOM_IN);
+			increaseFontSizeButton.tooltip_text = "Increase font size";
+			increaseFontSizeButton.clicked.connect(() => {
+				this.increaseFontSize();
+			});
+
+			var settingsMenuButton = new MenuToolButton.from_stock(Stock.INFO);
+
+			// Set up Settings menu
+			var settingsMenu = new Gtk.Menu();
+			
+			/*menuIncreaseFontSize = new Gtk.MenuItem.with_label("Increase font size");
+			menuIncreaseFontSize.activate.connect(() => { 
+				this.increaseFontSize(); 
+			});
+			menuDecreaseFontSize = new Gtk.MenuItem.with_label("Decrease font size");
+			menuDecreaseFontSize.activate.connect(() => { 
+				this.decreaseFontSize(); 
+			});*/
+
+			var menuKeyboardShortcutsToolbar = new Gtk.MenuItem.with_label("Keyboard Shortcuts");
+			menuKeyboardShortcutsToolbar.activate.connect(() => {
+				this.showKeyboardShortcuts();
+			});
+			var menuAboutToolbar = new Gtk.MenuItem.with_label("About P.S. Notes.");
+			menuAboutToolbar.activate.connect(() => {
+				this.menuAboutClicked();
+			});
+
+			
+//			settingsMenu.append(new SeparatorMenuItem());
+			settingsMenu.append(menuKeyboardShortcutsToolbar);
+			settingsMenu.append(menuAboutToolbar);
+
+			settingsMenuButton.set_menu(settingsMenu);
+
+			settingsMenu.show_all();
+
+			settingsMenuButton.clicked.connect(() => {
+				this.menuAboutClicked();
+			});
+
+			toolbar.insert(openButton, -1);
+			toolbar.insert(new SeparatorToolItem(), -1);
+			toolbar.insert(newButton, -1);
+			toolbar.insert(new SeparatorToolItem(), -1);
+			toolbar.insert(archiveButton, -1);
+			toolbar.insert(new SeparatorToolItem(), -1);
+			toolbar.insert(decreaseFontSizeButton, -1);
+			toolbar.insert(increaseFontSizeButton, -1);
+//			toolbar.insert(this.completeButton, -1);
+//			toolbar.insert(this.deleteButton, -1);
+			//		toolbar.insert(new Gtk.SeparatorToolItem(), -1);
+			var separator = new SeparatorToolItem();
+			toolbar.add(separator);
+			toolbar.child_set_property(separator, "expand", true);
+			separator.draw = false;
+			toolbar.insert(separator, -1);
+			toolbar.insert(settingsMenuButton, -1);
+		} else {
+			// Create menu
+
+			// Set up Notes menu
+			var notesMenu = new Gtk.Menu();
+			var menuNewNote = new Gtk.MenuItem.with_label("New Note");
+			menuNewNote.activate.connect(() => {
+				this.createNewNote();
+			});
+			var menuArchiveNote = new Gtk.MenuItem.with_label("Archive Note");
+			menuArchiveNote.activate.connect(() => {
+				this.archiveActiveNote();
+			});
+			var menuChangeNotesDir = new Gtk.MenuItem.with_label("Change Notes Folder");
+			menuChangeNotesDir.activate.connect(() => {
+				changeNotesDir();
+			});
+			var menuOpenNotesLocation = new Gtk.MenuItem.with_label("View Notes Files");
+			menuOpenNotesLocation.activate.connect(() => {
+				openNotesLocation();
+			});
+			var menuClose = new Gtk.MenuItem.with_label("Close P.S. Notes.");
+			menuClose.activate.connect(() => {
+				this.on_destroy();
+			});
+			notesMenu.append(menuNewNote);
+			notesMenu.append(menuArchiveNote);
+			notesMenu.append(new SeparatorMenuItem());
+			notesMenu.append(menuChangeNotesDir);
+			notesMenu.append(menuOpenNotesLocation);
+			notesMenu.append(new SeparatorMenuItem());
+			notesMenu.append(menuClose);
+
+			Gtk.MenuItem notesMenuItem = new Gtk.MenuItem.with_label("Notes");
+			notesMenuItem.set_submenu(notesMenu);
+			menubar.append(notesMenuItem);
+
+			// Set up Settings menu
+			var settingsMenu = new Gtk.Menu();
+			var menuIncreaseFontSize = new Gtk.MenuItem.with_label("Increase font size");
+			menuIncreaseFontSize.activate.connect(() => {
+				this.increaseFontSize();
+			});
+			var menuDecreaseFontSize = new Gtk.MenuItem.with_label("Decrease font size");
+			menuDecreaseFontSize.activate.connect(() => {
+				this.decreaseFontSize();
+			});
+			settingsMenu.append(menuIncreaseFontSize);
+			settingsMenu.append(menuDecreaseFontSize);
+
+			Gtk.MenuItem settingsMenuItem = new Gtk.MenuItem.with_label("Settings");
+			settingsMenuItem.set_submenu(settingsMenu);
+			menubar.append(settingsMenuItem);
+
+			// Set up Help menu
+			var helpMenu = new Gtk.Menu();
+			var menuKeyboardShortcuts = new Gtk.MenuItem.with_label("Keyboard Shortcuts");
+			menuKeyboardShortcuts.activate.connect(() => {
+				showKeyboardShortcuts();
+			});
+			var menuAbout = new Gtk.MenuItem.with_label("About P.S. Notes.");
+			menuAbout.activate.connect(() => {
+				this.menuAboutClicked();
+			});
+			helpMenu.append(menuKeyboardShortcuts);
+			helpMenu.append(menuAbout);
+
+			var helpMenuItem = new Gtk.MenuItem.with_label("Help");
+			helpMenuItem.set_submenu(helpMenu);
+			menubar.append(helpMenuItem);
+
+		}
+
+		
+		
+
+
+
+
+
+
+
+		
 
 		this.txtFilter = new Entry();
 
@@ -160,7 +292,7 @@ public class Main : Window {
 		this.notesView = new TreeView();
 		this.setupNotesView();
 
-		this.noteTextView = new TextView();
+		this.noteTextView = new HyperTextView();	// used to be TextView
 
 		this.noteTextView.buffer.changed.connect(() => {
 			onTextChanged(this.noteTextView.buffer);
@@ -201,7 +333,12 @@ public class Main : Window {
 		paned.position = UserData.panePosition;
 
 		var vbox1 = new Box (Orientation.VERTICAL, 0);
-		vbox1.pack_start(menubar, false, true, 0);
+//		vbox1.pack_start(menubar, false, true, 0);
+		if (elementaryHackTime) {
+			vbox1.pack_start(toolbar, false, true, 0);
+		} else {
+			vbox1.pack_start(menubar, false, true, 0);
+		}
 		vbox1.pack_start (paned, true, true, 2);
 
 		add (vbox1);
@@ -265,12 +402,6 @@ public class Main : Window {
 	}
 
 	private void noteSelected(TreeSelection treeSelection) {
-		if (this.firstLaunch) {
-			treeSelection.unselect_all();
-			this.noteTextView.is_focus = true;
-			this.firstLaunch = false;
-			return;
-		}
 		if (this.loadingNotes) {
 			return;
 		}
@@ -397,7 +528,7 @@ public class Main : Window {
 			//this.loadNotesList();
 		}
 
-		Zystem.debug("PAY ATTENTIONS TO MEEEEEEEEEEEEEE " + this.editor.firstLine().strip());
+//		Zystem.debug("PAY ATTENTIONS TO MEEEEEEEEEEEEEE " + this.editor.firstLine().strip());
 
 		// If note title changed
 		if (this.editor.lineCount() > 0 && this.editor.firstLine().strip() != ""
@@ -426,11 +557,15 @@ public class Main : Window {
 
 	private void createNewNote() {
 		this.seldomSave();
-		this.note = new Note("NEW NOTE");
+		this.note = new Note("");
 		//this.loadNotesList();
-		this.needsSave = true;
+//		this.needsSave = true;
+		this.needsSave = false;
+
+		this.isOpening = true;
 		this.editor.startNewNote(this.note.title);
-		this.noteTextView.select_all(true);
+		this.isOpening = false;
+//		this.noteTextView.select_all(true);
 	}
 
 	/**
@@ -511,11 +646,19 @@ public class Main : Window {
 		var about = new AboutDialog();
 		about.set_program_name("P.S. Notes.");
 		about.comments = "Notes, plain and simple.";
-		about.website = "http://burnsoftware.wordpress.com/";
+		about.website = "http://burnsoftware.wordpress.com/p-s-notes";
 		about.logo_icon_name = "psnotes";
 		about.set_copyright("by Zach Burnham");
 		about.run();
 		about.hide();
+	}
+
+	private void archiveActiveNote() {
+		this.seldomSave();
+		if (this.note != null && this.editor.getText() != "") {
+			this.note.archive();
+		}
+		this.createNewNote();
 	}
 
 	/**

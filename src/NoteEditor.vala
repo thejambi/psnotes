@@ -221,8 +221,6 @@ public class NoteEditor : GLib.Object {
 	}
 
 	private void onInsertText(TextIter iter, string text, int length) {
-		//
-		Zystem.debug("HEY THERE IT'S THE ONINSERTTEXT SPEAKING HERE: " + text);
 
 		// this.highlight();
 

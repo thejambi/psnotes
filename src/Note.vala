@@ -93,4 +93,12 @@ public class Note : GLib.Object {
 		}
 	}
 
+	/**
+	 * Move note file to the archive directory.
+	 */
+	public void archive() {
+		FileInfo fileInfo = this.noteFile.query_info(FileAttribute.STANDARD_NAME, FileQueryInfoFlags.NONE);
+		FileUtility.moveFile(fileInfo, UserData.notesDirPath, UserData.getArchivedNotesDir());
+	}
+
 }

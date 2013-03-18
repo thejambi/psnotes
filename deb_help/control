@@ -1,0 +1,21 @@
+Source: psnotes
+Section: misc
+Priority: extra
+Maintainer: Zach Burnham <thejambi@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, 
+ libgee-dev (>= 0.6.4),
+ libgdk-pixbuf2.0-dev (>= 2.26.1),
+ libglib2.0-dev (>= 2.32.1),
+ libgtk-3-dev (>= 3.4.1),
+ valac-0.16 (>= 0.16.0),
+ cmake (>= 2.8.7)
+Standards-Version: 3.9.2
+Homepage: http://burnsoftware.wordpress.com/p-s-notes/
+#Vcs-Git: git://git.debian.org/collab-maint/psnotes.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/psnotes.git;a=summary
+
+Package: psnotes
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: P.S. Notes.
+ Notes, plain and simple.

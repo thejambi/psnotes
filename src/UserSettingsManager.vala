@@ -85,7 +85,7 @@ public class UserSettingsManager : GLib.Object {
 			UserData.windowHeight = keyFile.get_integer(this.notesDirGroup, this.windowHeightKey);
 			UserData.panePosition = keyFile.get_integer(this.notesDirGroup, this.panePositionKey);
 		} catch (KeyFileError e) {
-			Zystem.debug("Error loading window size; using defualt.");
+			Zystem.debug("Error loading window size; using default.");
 		}
 
 		// Return true if the keyFile data has been updated (if it's no longer the same as it was)

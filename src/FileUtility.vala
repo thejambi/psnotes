@@ -74,6 +74,44 @@ class FileUtility : GLib.Object {
 	}
 
 	/**
+	 * Move the given file somewhere else.
+	 */
+	public static void moveFile(FileInfo file, string fromThisDir, string toThisPath) {
+		Zystem.debug("Moving file " + file.get_name());
+
+//		string fileDestPath = "";
+
+		string fileDestPath = pathCombine(toThisPath, file.get_name());
+		
+		var destFile = File.new_for_path(fileDestPath);
+
+		// If file already exists, add timestamp to file name
+		if (destFile.query_exists()) {
+			fileDestPath = addTimestampToFilePath(fileDestPath);
+			destFile = File.new_for_path(fileDestPath);
+		}
+
+		// Only move the file if destination file does not exist. We don't want to write over any files.
+		if (!destFile.query_exists()) {
+			GLib.FileUtils.rename(pathCombine(fromThisDir, file.get_name()), fileDestPath);
+		}
+	}
+
+	/**
+	 * Get the file path with the unique timestamp inserted at end of 
+	 * filename before file extension.
+	 */
+	private static string addTimestampToFilePath(string filePath) {
+		DateTime dateTime = new GLib.DateTime.now_local();
+
+		string pathPrefix = filePath.substring(0, filePath.last_index_of("."));
+		string fileExt = filePath.substring(filePath.last_index_of("."));
+		string timestamp = dateTime.format("_%Y%m%d_%H%M%S");
+
+		return pathPrefix + timestamp + fileExt;
+	}
+
+	/**
 	 * 
 	 */
 	// public static bool isDirectoryEmpty(string dirPath) {
