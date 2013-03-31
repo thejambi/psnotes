@@ -17,6 +17,8 @@ PSNotes is free software: you can redistribute it and/or modify it
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Gee;
+
 public class UserSettingsManager : GLib.Object {
 
 	private KeyFile keyFile;
@@ -25,6 +27,7 @@ public class UserSettingsManager : GLib.Object {
 
 	public static const string notesDirKey = "notesDirectory";
 	public static const string notesDirGroup = "PSNotes";
+	public static const string notebooksGroup = "Notebooks";
 	
 	public static const string windowWidthKey = "width";
 	public static const string windowHeightKey = "height";
@@ -109,8 +112,28 @@ public class UserSettingsManager : GLib.Object {
 	}
 
 	public void setInt(string key, int val) {
-		keyFile.set_integer(this.notesDirGroup, key, val);
+		keyFile.set_integer(notesDirGroup, key, val);
 		writeKeyFile();
+	}
+
+	public void addNotebook(string name, string path) {
+		keyFile.set_string(notebooksGroup, name, path);
+		writeKeyFile();
+	}
+
+	public void removeNotebook(string name) {
+		keyFile.remove_key(this.notebooksGroup, name);
+		writeKeyFile();
+	}
+
+	public ArrayList<string> getNotebookList() {
+		var list = new ArrayList<string>();
+
+		foreach (string s in keyFile.get_keys(notebooksGroup)) {
+			list.add(s);
+		}
+
+		return list;
 	}
 
 }

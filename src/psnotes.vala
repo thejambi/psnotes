@@ -54,6 +54,9 @@ public class Main : Window {
 	private Paned paned;
 	private NoteEditor editor;
 	private NotesFilter filter;
+	
+	private Gtk.MenuToolButton openButton;
+	private Gtk.Menu openNotebooksMenu;
 
 	private NotesMonitor notesMonitor;
 	private FileMonitor fileMon;
@@ -106,15 +109,21 @@ public class Main : Window {
 		var toolbar = new Toolbar();
 		var menubar = new MenuBar();
 		
-		if (elementaryHackTime) {
+//		if (elementaryHackTime) {   // Let's do this all the time
 			// Create toolbar
 			toolbar.set_style(ToolbarStyle.ICONS);
+			var context = toolbar.get_style_context();
+			context.add_class(Gtk.STYLE_CLASS_PRIMARY_TOOLBAR);
 
-			var openButton = new ToolButton.from_stock(Stock.OPEN);
+//			var openButton = new ToolButton.from_stock(Stock.OPEN);
+			this.openButton = new MenuToolButton.from_stock(Stock.OPEN);
 			openButton.tooltip_text = "Change notes folder";
 			openButton.clicked.connect(() => {
-				this.changeNotesDir();
+				this.openNotesDir();
 			});
+
+			// Set up Open Notebooks menu
+			this.setOpenNotebooksMenuItems();
 
 			var newButton = new ToolButton.from_stock(Stock.NEW);
 			newButton.tooltip_text = "New note";
@@ -196,7 +205,9 @@ public class Main : Window {
 			separator.draw = false;
 			toolbar.insert(separator, -1);
 			toolbar.insert(settingsMenuButton, -1);
-		} else {
+//		} else {
+
+		if (!elementaryHackTime) {
 			// Create menu
 
 			// Set up Notes menu
@@ -211,7 +222,7 @@ public class Main : Window {
 			});
 			var menuChangeNotesDir = new Gtk.MenuItem.with_label("Change Notes Folder");
 			menuChangeNotesDir.activate.connect(() => {
-				changeNotesDir();
+				this.openNotesDir();
 			});
 			var menuOpenNotesLocation = new Gtk.MenuItem.with_label("View Notes Files");
 			menuOpenNotesLocation.activate.connect(() => {
@@ -234,7 +245,7 @@ public class Main : Window {
 			menubar.append(notesMenuItem);
 
 			// Set up Settings menu
-			var settingsMenu = new Gtk.Menu();
+			var settingsMenu2 = new Gtk.Menu();
 			var menuIncreaseFontSize = new Gtk.MenuItem.with_label("Increase font size");
 			menuIncreaseFontSize.activate.connect(() => {
 				this.increaseFontSize();
@@ -243,8 +254,8 @@ public class Main : Window {
 			menuDecreaseFontSize.activate.connect(() => {
 				this.decreaseFontSize();
 			});
-			settingsMenu.append(menuIncreaseFontSize);
-			settingsMenu.append(menuDecreaseFontSize);
+			settingsMenu2.append(menuIncreaseFontSize);
+			settingsMenu2.append(menuDecreaseFontSize);
 
 			Gtk.MenuItem settingsMenuItem = new Gtk.MenuItem.with_label("Settings");
 			settingsMenuItem.set_submenu(settingsMenu);
@@ -268,15 +279,6 @@ public class Main : Window {
 			menubar.append(helpMenuItem);
 
 		}
-
-		
-		
-
-
-
-
-
-
 
 		
 
@@ -333,12 +335,10 @@ public class Main : Window {
 		paned.position = UserData.panePosition;
 
 		var vbox1 = new Box (Orientation.VERTICAL, 0);
-//		vbox1.pack_start(menubar, false, true, 0);
-		if (elementaryHackTime) {
-			vbox1.pack_start(toolbar, false, true, 0);
-		} else {
+		if (!elementaryHackTime) {
 			vbox1.pack_start(menubar, false, true, 0);
 		}
+		vbox1.pack_start(toolbar, false, true, 0);
 		vbox1.pack_start (paned, true, true, 2);
 
 		add (vbox1);
@@ -360,6 +360,44 @@ public class Main : Window {
 		
 		// Connect on_destroy
 		this.destroy.connect(() => { this.on_destroy(); });
+	}
+
+	private void setOpenNotebooksMenuItems() {
+		this.openNotebooksMenu = new Gtk.Menu();
+		
+		// Add list of user's notebooks to menu
+		foreach (string s in UserData.getNotebookList()) {
+			var menuItem = new Gtk.MenuItem.with_label(s);
+			menuItem.activate.connect(() => {
+				this.setNotesDir(s);
+			});
+			
+			this.openNotebooksMenu.append(menuItem);
+		}
+
+		// Then, add the "Add" and "Remove" options
+		var rememberNotebook = new Gtk.MenuItem.with_label("Remember current notebook");
+		rememberNotebook.activate.connect(() => { this.rememberCurrentNotebook(); });
+		
+		var forgetNotebook = new Gtk.MenuItem.with_label("Forget current notebook");
+		forgetNotebook.activate.connect(() => { this.forgetCurrentNotebook(); });
+
+		this.openNotebooksMenu.append(new Gtk.SeparatorMenuItem());
+		this.openNotebooksMenu.append(rememberNotebook);
+		this.openNotebooksMenu.append(forgetNotebook);
+
+		this.openButton.set_menu(openNotebooksMenu);
+		this.openNotebooksMenu.show_all();
+	}
+
+	private void rememberCurrentNotebook() {
+		UserData.rememberCurrentNotebook();
+		this.setOpenNotebooksMenuItems();
+	}
+
+	private void forgetCurrentNotebook() {
+		UserData.forgetCurrentNotebook();
+		this.setOpenNotebooksMenuItems();
 	}
 
 	/**
@@ -470,7 +508,7 @@ public class Main : Window {
 					this.createNewNote();
 					break;
 				case "o":
-					this.changeNotesDir();
+					this.openNotesDir();
 					break;
 				case "equal":
 					this.increaseFontSize();
@@ -614,20 +652,23 @@ public class Main : Window {
 		}
 	}
 
-	public void changeNotesDir() {
-		Zystem.debug("Changing Notes dir eh?");
-
+	public void openNotesDir() {
 		var fileChooser = new FileChooserDialog("Choose Notes Folder", this,
 												FileChooserAction.SELECT_FOLDER,
 												Stock.CANCEL, ResponseType.CANCEL,
 												Stock.OPEN, ResponseType.ACCEPT);
 		if (fileChooser.run() == ResponseType.ACCEPT) {
 			string dirPath = fileChooser.get_filename();
-			UserData.setNotesDir(dirPath);
-			this.loadNotesList();
-			this.monitorNotesDir();
+			this.setNotesDir(dirPath);
 		}
 		fileChooser.destroy();
+	}
+
+	private void setNotesDir(string dirPath) {
+		this.createNewNote();
+		UserData.setNotesDir(dirPath);
+		this.loadNotesList();
+		this.monitorNotesDir();
 	}
 
 	private void openNotesLocation() {

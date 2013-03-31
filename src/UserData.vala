@@ -78,7 +78,28 @@ class UserData : Object {
 	}
 
 	public static string getArchivedNotesDir() {
-		return FileUtility.pathCombine(notesDirPath, "Archive");
+		// Check if exists, if not, create
+		string path = FileUtility.pathCombine(notesDirPath, "Archive");
+		
+		var file = File.new_for_path(path);
+
+		if (!file.query_exists()) {
+			FileUtility.createFolder(path);
+		}
+		
+		return path;
+	}
+
+	public static void rememberCurrentNotebook() {
+		settings.addNotebook(notesDirPath, notesDirPath);
+	}
+
+	public static void forgetCurrentNotebook() {
+		settings.removeNotebook(notesDirPath);
+	}
+
+	public static ArrayList<string> getNotebookList() {
+		return settings.getNotebookList();
 	}
 
 	
