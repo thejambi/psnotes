@@ -339,7 +339,7 @@ public class Main : Window {
 			vbox1.pack_start(menubar, false, true, 0);
 		}
 		vbox1.pack_start(toolbar, false, true, 0);
-		vbox1.pack_start (paned, true, true, 2);
+		vbox1.pack_start (paned, true, true, 0);
 
 		add (vbox1);
 
@@ -430,11 +430,11 @@ public class Main : Window {
 		});
 	}
 
-	private void loadNotesList() {		
+	private async void loadNotesList() {		
 		Zystem.debug("Loading Notes List!");
 		this.loadingNotes = true;
 
-		this.filter.filter(this.txtFilter.text);
+		yield this.filter.filter(this.txtFilter.text);
 
 		this.loadingNotes = false;
 	}
@@ -444,9 +444,9 @@ public class Main : Window {
 			return;
 		}
 
-		if (this.note != null) {
+		/*if (this.note != null) {
 			this.seldomSave();
-		}
+		}*/
 
 		TreeModel model;
 		TreeIter iter;
@@ -529,7 +529,7 @@ public class Main : Window {
 				case "period":
 				case "Return":
 				case "space":
-					this.seldomSave();
+					//this.seldomSave();
 					break;
 				default:
 					break;
@@ -551,7 +551,7 @@ public class Main : Window {
 		return false;
 	}
 
-	public void onTextChanged(TextBuffer buffer) {
+	/*public void onTextChanged(TextBuffer buffer) {
 		if (!this.isOpening) {
 			this.needsSave = true;
 		} else {
@@ -583,6 +583,40 @@ public class Main : Window {
 		if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
 			//this.loadNotesList();
 		}
+	}*/
+
+	public void onTextChanged(TextBuffer buffer) {
+		if (this.isOpening) {
+			return;
+		}
+
+		this.needsSave = true;
+
+		// If creating a new note
+		if (this.note == null && this.editor.getText() != "") {
+			Zystem.debug("NOTE IS NULL, thank you very much!");
+			Zystem.debug("Note title should be: " + this.editor.firstLine());
+			this.note = new Note(this.editor.firstLine().strip());
+			this.loadNotesList();
+		}
+
+		// If note title changed
+		if (this.editor.lineCount() > 0 && this.editor.firstLine().strip() != ""
+				&& this.noteTitleChanged()) {
+			Zystem.debug("Oh boy, the note title changed. Let's rename that sucker.");
+			this.note.rename(this.editor.firstLine().strip(), this.editor.getText());
+			this.loadNotesList();
+		} else {
+			this.autoSave();
+		}
+
+		//if (this.editor.firstLine().strip() == "") {
+			//this.seldomSave();
+		//}
+
+		if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
+			this.loadNotesList();
+		}
 	}
 
 	private bool noteTitleChanged() {
@@ -594,7 +628,7 @@ public class Main : Window {
 	}
 
 	private void createNewNote() {
-		this.seldomSave();
+		/*this.seldomSave();*/
 		this.note = new Note("");
 		//this.loadNotesList();
 //		this.needsSave = true;
@@ -636,21 +670,37 @@ public class Main : Window {
 		this.noteTextView.modify_font(font);
 	}
 
-	private async void seldomSave() {
+	/*private async void seldomSave() {
 		Zystem.debug("THIS IS A SELDOM SAVE POINT AND needsSave is " + this.needsSave.to_string());
 		if (UserData.seldomSave && this.needsSave) {
 			this.callSave();
 		}
+	}*/
+
+	private void autoSave() {
+		this.filter.setNoLoad();
+		
+		this.callSave();
 	}
 
 	private async void callSave() {
+		try {
+			yield this.note.saveAsync(this.editor.getText());
+			this.needsSave = false;
+			this.filter.setLoad();
+		} catch (Error e) {
+			Zystem.debug("There was an error saving the file.");
+		}
+	}
+
+	/*private async void callSave() {
 		try {
 			this.note.save(this.editor.getText());
 			this.needsSave = false;
 		} catch (Error e) {
 			Zystem.debug("There was an error saving the file.");
 		}
-	}
+	}*/
 
 	public void openNotesDir() {
 		var fileChooser = new FileChooserDialog("Choose Notes Folder", this,
@@ -695,7 +745,7 @@ public class Main : Window {
 	}
 
 	private void archiveActiveNote() {
-		this.seldomSave();
+		/*this.seldomSave();*/
 		if (this.note != null && this.editor.getText() != "") {
 			this.note.archive();
 		}
@@ -706,7 +756,7 @@ public class Main : Window {
 	 * Quit P.S. Notes.
 	 */
 	public void on_destroy () {
-		if (UserData.seldomSave && this.needsSave) {
+		/*if (UserData.seldomSave && this.needsSave) {
 			Zystem.debug("Saving file on exit.");
 			this.callSave();
 			// try {
@@ -714,7 +764,7 @@ public class Main : Window {
 			// } catch (Error e) {
 			// 	Zystem.debug("There was an error saving the file.");
 			// }
-		}
+		}*/
 
 		// Save window size
 		Zystem.debug("Width and height: " + this.width.to_string() + " and " + this.height.to_string());

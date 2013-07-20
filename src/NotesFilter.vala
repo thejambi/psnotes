@@ -22,13 +22,20 @@ using Gtk;
 public class NotesFilter : GLib.Object {
 
 	private ListStore listmodel;
+
+	private bool reload;
 	
 	// Constructor
 	public NotesFilter(ListStore listmodel) {
 		this.listmodel = listmodel;
+		this.reload = true;
 	}
 
-	public void filter(string filterText) {
+	public async void filter(string filterText) {
+		if (!this.reload) {
+			return;
+		}
+		
 		try {
 			listmodel.clear();
 			listmodel.set_sort_column_id(0, SortType.ASCENDING);
@@ -54,6 +61,14 @@ public class NotesFilter : GLib.Object {
 		} catch(Error e) {
 			stderr.printf ("Error loading notes list: %s\n", e.message);
 		}
+	}
+
+	public void setNoLoad() {
+		this.reload = false;
+	}
+
+	public void setLoad() {
+		this.reload = true;
 	}
 
 }
