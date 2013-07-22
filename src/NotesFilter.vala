@@ -19,20 +19,40 @@ psnotes is free software: you can redistribute it and/or modify it
 
 using Gtk;
 
+public enum LoadRequestType {
+	autoSaved,
+	fileMonitorEvent,
+	filterTextChanged,
+	otherType;
+}
+
 public class NotesFilter : GLib.Object {
 
 	private ListStore listmodel;
 
-	private bool reload;
+	private int reloadCount;
+
+	private bool loadRequested;
+	private bool noLoad;
+
+	private string filterText;
 	
 	// Constructor
 	public NotesFilter(ListStore listmodel) {
 		this.listmodel = listmodel;
-		this.reload = true;
+		this.loadRequested = false;
+		this.reloadCount = 0;
+		this.noLoad = false;
+		this.filterText = "";
 	}
 
-	public async void filter(string filterText) {
-		if (!this.reload) {
+	public /*async*/ void filter() {
+
+		Zystem.debug("Filter Text:" + this.filterText + "|");
+		
+		this.reloadCount++;
+		Zystem.debug("********************   Reload count is: " + this.reloadCount.to_string());
+		if (this.reloadCount < 0) {
 			return;
 		}
 		
@@ -62,14 +82,44 @@ public class NotesFilter : GLib.Object {
 			stderr.printf ("Error loading notes list: %s\n", e.message);
 		}
 	}
-
-	public void setNoLoad() {
-		this.reload = false;
+	
+	public bool onTimerEvent() {
+		this.loadRequested = false;
+		
+		if (this.noLoad) {
+			Zystem.debug("------------------------------> NoLoad! <------------------------");
+			this.noLoad = false;
+			
+			return false;
+		}
+		
+		Zystem.debug("Timer event. Calling filter.");
+		this.filter();
+		
+		return false;
 	}
 
-	public void setLoad() {
-		this.reload = true;
+
+	public void setToLoad(LoadRequestType requestType) {
+		Zystem.debug(requestType.to_string());
+		if (!this.loadRequested && requestType != LoadRequestType.autoSaved) {
+			var timerId = Timeout.add(2000, onTimerEvent);
+			Zystem.debug("Set timer!");
+		} else {
+			Zystem.debug("No Timer Set! Take THAT!");
+		}
+
+		this.loadRequested = true;
 	}
+
+	public void notifyAutoSave() {
+		this.noLoad = true;
+	}
+
+	public void setFilterText(string text) {
+		this.filterText = text;
+	}
+	
 
 }
 

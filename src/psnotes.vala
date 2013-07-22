@@ -88,8 +88,6 @@ public class Main : Window {
 
 
 
-
-
 		// Do I create toolbar or menu?
 		var textBgColor = new TextView().get_style_context().get_background_color(StateFlags.NORMAL);
 		var winBgColor = this.get_style_context().get_background_color(StateFlags.NORMAL);
@@ -285,10 +283,14 @@ public class Main : Window {
 		this.txtFilter = new Entry();
 
 		this.txtFilter.buffer.deleted_text.connect(() => {
-			this.loadNotesList();
+			this.filter.setFilterText(this.txtFilter.text);
+			this.loadNotesList("txtFilter text was deleted!");
+//			this.filter.setToLoad(LoadRequestType.filterTextChanged);
 		});
 		this.txtFilter.buffer.inserted_text.connect(() => {
-			this.loadNotesList();
+			this.filter.setFilterText(this.txtFilter.text);
+			this.loadNotesList("txtFilter text was inserted!");
+//			this.filter.setToLoad(LoadRequestType.filterTextChanged);
 		});
 
 		this.notesView = new TreeView();
@@ -407,9 +409,21 @@ public class Main : Window {
 		//this.notesMonitor = new NotesMonitor("/home/zach/Dropbox/epistle");
 		this.notesMonitor = new NotesMonitor(UserData.notesDirPath);
 		this.fileMon = notesMonitor.getFileMonitor();
-		this.fileMon.changed.connect(() => {
-			Zystem.debug("Notes directory has changed! Refresh the list eh!");
-			this.loadNotesList();
+		this.fileMon.changed.connect((one, two, fileEvent) => {
+//			Zystem.debug(fileEvent.to_string());
+
+			/*if (this.currentEventType == 1) {
+				Zystem.debug("neener neener!");
+				if (fileEvent == FileMonitorEvent.CHANGES_DONE_HINT) {
+					this.currentEventType = 0;
+				}
+				return;
+			}*/
+			
+			if (fileEvent == FileMonitorEvent.DELETED || fileEvent == FileMonitorEvent.ATTRIBUTE_CHANGED) {
+//				this.loadNotesList("FileMonitor was changed! " + fileMon.get_type().to_string());
+				this.filter.setToLoad(LoadRequestType.fileMonitorEvent);
+			}
 		});
 	}
 
@@ -421,7 +435,7 @@ public class Main : Window {
 
 		this.filter = new NotesFilter(listmodel);
 
-		this.loadNotesList();
+		this.loadNotesList("Just setting up notes view.");
 
 		var treeSelection = this.notesView.get_selection();
 		treeSelection.set_mode(SelectionMode.SINGLE);
@@ -430,11 +444,12 @@ public class Main : Window {
 		});
 	}
 
-	private async void loadNotesList() {		
+	private /*async*/ void loadNotesList(string reason) {		
 		Zystem.debug("Loading Notes List!");
+		Zystem.debug(reason);
 		this.loadingNotes = true;
 
-		yield this.filter.filter(this.txtFilter.text);
+		/*yield*/ this.filter.filter();
 
 		this.loadingNotes = false;
 	}
@@ -473,6 +488,11 @@ public class Main : Window {
 		state = key.state;
 		bool ctrl = (state & Gdk.ModifierType.CONTROL_MASK) != 0;
 		bool shift = (state & Gdk.ModifierType.SHIFT_MASK) != 0;
+		/*bool release = (state & Gdk.ModifierType.RELEASE_MASK) != 0;
+		bool hyper = (state & Gdk.ModifierType.HYPER_MASK) != 0;
+
+		Zystem.debug("RELEASE: " + release.to_string());
+		Zystem.debug("HYPER:   " + hyper.to_string());*/
 
 		string keyName = Gdk.keyval_name(keyval);
 		
@@ -597,7 +617,7 @@ public class Main : Window {
 			Zystem.debug("NOTE IS NULL, thank you very much!");
 			Zystem.debug("Note title should be: " + this.editor.firstLine());
 			this.note = new Note(this.editor.firstLine().strip());
-			this.loadNotesList();
+			this.loadNotesList("Creating a new note!");
 		}
 
 		// If note title changed
@@ -605,7 +625,8 @@ public class Main : Window {
 				&& this.noteTitleChanged()) {
 			Zystem.debug("Oh boy, the note title changed. Let's rename that sucker.");
 			this.note.rename(this.editor.firstLine().strip(), this.editor.getText());
-			this.loadNotesList();
+			this.loadNotesList("Note title changed!");
+			this.filter.notifyAutoSave();
 		} else {
 			this.autoSave();
 		}
@@ -614,9 +635,10 @@ public class Main : Window {
 			//this.seldomSave();
 		//}
 
-		if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
-			this.loadNotesList();
-		}
+		/*if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
+			this.loadNotesList("I think the note is gone!");
+//			this.filter.setNoLoad(0);
+		}*/
 	}
 
 	private bool noteTitleChanged() {
@@ -678,16 +700,22 @@ public class Main : Window {
 	}*/
 
 	private void autoSave() {
-		this.filter.setNoLoad();
+
+		this.filter.notifyAutoSave();
+
+		bool load = this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "";
 		
 		this.callSave();
+
+		if (load) {
+			this.loadNotesList("Note deleted, need to reload.");
+		}
 	}
 
 	private async void callSave() {
 		try {
 			yield this.note.saveAsync(this.editor.getText());
 			this.needsSave = false;
-			this.filter.setLoad();
 		} catch (Error e) {
 			Zystem.debug("There was an error saving the file.");
 		}
@@ -717,7 +745,7 @@ public class Main : Window {
 	private void setNotesDir(string dirPath) {
 		this.createNewNote();
 		UserData.setNotesDir(dirPath);
-		this.loadNotesList();
+		this.loadNotesList("Just settings notes dir path.");
 		this.monitorNotesDir();
 	}
 
