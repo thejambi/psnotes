@@ -22,7 +22,7 @@ using Gtk;
 public class Main : Window {
 
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
-	private const bool isInstalled = false;
+	private const bool isInstalled = true;
 
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
@@ -61,6 +61,9 @@ public class Main : Window {
 	private NotesMonitor notesMonitor;
 	private FileMonitor fileMon;
 
+	private bool saveRequested;
+	private uint timerId;
+
 	/** 
 	 * Constructor for main P.S. Notes window.
 	 */
@@ -85,6 +88,8 @@ public class Main : Window {
 			}
 			return false;
 		});
+
+		this.saveRequested = false;
 
 
 
@@ -433,23 +438,24 @@ public class Main : Window {
 
 		this.notesView.insert_column_with_attributes (-1, "Notes", new CellRendererText (), "text", 0);
 
-		this.filter = new NotesFilter(listmodel);
+		var treeSelection = this.notesView.get_selection();
+		
+		this.filter = new NotesFilter(listmodel, treeSelection);
 
 		this.loadNotesList("Just setting up notes view.");
 
-		var treeSelection = this.notesView.get_selection();
 		treeSelection.set_mode(SelectionMode.SINGLE);
 		treeSelection.changed.connect(() => {
 			noteSelected(treeSelection);
 		});
 	}
 
-	private /*async*/ void loadNotesList(string reason) {		
+	private async void loadNotesList(string reason) {		
 		Zystem.debug("Loading Notes List!");
 		Zystem.debug(reason);
 		this.loadingNotes = true;
 
-		/*yield*/ this.filter.filter();
+		yield this.filter.filter();
 
 		this.loadingNotes = false;
 	}
@@ -458,10 +464,6 @@ public class Main : Window {
 		if (this.loadingNotes) {
 			return;
 		}
-
-		/*if (this.note != null) {
-			this.seldomSave();
-		}*/
 
 		TreeModel model;
 		TreeIter iter;
@@ -571,40 +573,6 @@ public class Main : Window {
 		return false;
 	}
 
-	/*public void onTextChanged(TextBuffer buffer) {
-		if (!this.isOpening) {
-			this.needsSave = true;
-		} else {
-			return;
-		}
-
-		// If creating a new note
-		if (this.note == null && this.editor.getText() != "") {
-			Zystem.debug("NOTE IS NULL, thank you very much!");
-			Zystem.debug("Note title should be: " + this.editor.firstLine());
-			this.note = new Note(this.editor.firstLine().strip());
-			//this.loadNotesList();
-		}
-
-//		Zystem.debug("PAY ATTENTIONS TO MEEEEEEEEEEEEEE " + this.editor.firstLine().strip());
-
-		// If note title changed
-		if (this.editor.lineCount() > 0 && this.editor.firstLine().strip() != ""
-				&& this.noteTitleChanged()) {
-			Zystem.debug("Oh boy, the note title changed. Let's rename that sucker.");
-			this.note.rename(this.editor.firstLine().strip(), this.editor.getText());
-			this.loadNotesList();
-		}
-
-		if (this.editor.firstLine().strip() == "") {
-			this.seldomSave();
-		}
-
-		if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
-			//this.loadNotesList();
-		}
-	}*/
-
 	public void onTextChanged(TextBuffer buffer) {
 		if (this.isOpening) {
 			return;
@@ -628,17 +596,26 @@ public class Main : Window {
 			this.loadNotesList("Note title changed!");
 			this.filter.notifyAutoSave();
 		} else {
-			this.autoSave();
+			//this.autoSave();
+			this.requestSave();
+		}
+	}
+
+	private void requestSave() {
+		if (!this.saveRequested) {
+			this.timerId = Timeout.add(200, onTimerEvent);
+			Zystem.debug("Set timer for SAVE!");
 		}
 
-		//if (this.editor.firstLine().strip() == "") {
-			//this.seldomSave();
-		//}
+		this.saveRequested = true;
+	}
 
-		/*if (this.editor.lineCount() == 0 || this.editor.firstLine().strip() == "") {
-			this.loadNotesList("I think the note is gone!");
-//			this.filter.setNoLoad(0);
-		}*/
+	private bool onTimerEvent() {
+		this.saveRequested = false;
+		
+		this.autoSave();
+		
+		return false;
 	}
 
 	private bool noteTitleChanged() {
@@ -784,15 +761,15 @@ public class Main : Window {
 	 * Quit P.S. Notes.
 	 */
 	public void on_destroy () {
-		/*if (UserData.seldomSave && this.needsSave) {
-			Zystem.debug("Saving file on exit.");
-			this.callSave();
-			// try {
-			// 	this.note.saveNonAsync(this.editor.getText());
-			// } catch (Error e) {
-			// 	Zystem.debug("There was an error saving the file.");
-			// }
-		}*/
+
+		if (this.saveRequested && this.timerId != 0) {
+			Source.remove(this.timerId);
+			try {
+				this.note.save(this.editor.getText());
+			} catch (Error e) {
+				Zystem.debug("There was an error saving the file.");
+			}
+		}
 
 		// Save window size
 		Zystem.debug("Width and height: " + this.width.to_string() + " and " + this.height.to_string());

@@ -28,7 +28,8 @@ public enum LoadRequestType {
 
 public class NotesFilter : GLib.Object {
 
-	private ListStore listmodel;
+	private weak ListStore listmodel;
+	private weak TreeSelection treeSelection;
 
 	private int reloadCount;
 
@@ -38,15 +39,16 @@ public class NotesFilter : GLib.Object {
 	private string filterText;
 	
 	// Constructor
-	public NotesFilter(ListStore listmodel) {
+	public NotesFilter(ListStore listmodel, TreeSelection treeSelection) {
 		this.listmodel = listmodel;
+		this.treeSelection = treeSelection;
 		this.loadRequested = false;
 		this.reloadCount = 0;
 		this.noLoad = false;
 		this.filterText = "";
 	}
 
-	public /*async*/ void filter() {
+	public async void filter() {
 
 		Zystem.debug("Filter Text:" + this.filterText + "|");
 		
@@ -55,6 +57,9 @@ public class NotesFilter : GLib.Object {
 		if (this.reloadCount < 0) {
 			return;
 		}
+
+//		this.treeSelection.unselect_all();
+		this.treeSelection.mode = SelectionMode.NONE;
 		
 		try {
 			listmodel.clear();
@@ -81,6 +86,8 @@ public class NotesFilter : GLib.Object {
 		} catch(Error e) {
 			stderr.printf ("Error loading notes list: %s\n", e.message);
 		}
+
+		this.treeSelection.mode = SelectionMode.SINGLE;
 	}
 	
 	public bool onTimerEvent() {
@@ -101,9 +108,9 @@ public class NotesFilter : GLib.Object {
 
 
 	public void setToLoad(LoadRequestType requestType) {
-		Zystem.debug(requestType.to_string());
+//		Zystem.debug(requestType.to_string());
 		if (!this.loadRequested && requestType != LoadRequestType.autoSaved) {
-			var timerId = Timeout.add(2000, onTimerEvent);
+			var timerId = Timeout.add(1000, onTimerEvent);
 			Zystem.debug("Set timer!");
 		} else {
 			Zystem.debug("No Timer Set! Take THAT!");
