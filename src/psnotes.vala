@@ -592,7 +592,7 @@ public class Main : Window {
 		if (this.editor.lineCount() > 0 && this.editor.firstLine().strip() != ""
 				&& this.noteTitleChanged()) {
 			Zystem.debug("Oh boy, the note title changed. Let's rename that sucker.");
-			this.note.rename(this.editor.firstLine().strip(), this.editor.getText());
+			this.note.rename(this.editor.firstLine().strip().replace(" ","-"), this.editor.getText());
 			this.loadNotesList("Note title changed!");
 			this.filter.notifyAutoSave();
 		} else {
