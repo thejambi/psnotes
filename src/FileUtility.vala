@@ -111,6 +111,11 @@ class FileUtility : GLib.Object {
 		return pathPrefix + timestamp + fileExt;
 	}
 
+	public static string getTimestamp() {
+		DateTime dateTime = new GLib.DateTime.now_local();
+		return dateTime.format("_%Y%m%d_%H%M%S");
+	}
+
 	/**
 	 * 
 	 */

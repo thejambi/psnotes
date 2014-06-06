@@ -25,12 +25,16 @@ public class Note : GLib.Object {
 
 	// Constructor
 	public Note(string title) {
-		this.setNoteInfo(title);
+		this.setNoteInfo(this.trimBadStuffFromTitle(title));
 		Zystem.debug("Note path is: " + this.filePath);
 	}
 
-	public void setNoteInfo(string title) {
-		this.title = title;
+	public string trimBadStuffFromTitle(string title) {
+		return title.replace("/", "_");
+	}
+
+	public void setNoteInfo(string newTitle) {
+		this.title = newTitle;
 		this.filePath = FileUtility.pathCombine(UserData.notesDirPath, this.title + ".txt");
 		this.noteFile = File.new_for_path(this.filePath);
 	}
@@ -45,11 +49,16 @@ public class Note : GLib.Object {
 		}
 	}
 
-	public void rename(string title, string text) {
+	public void rename(string noteTitle, string text) {
+		// Don't let there be a filename that is too long
+		string newTitle = this.trimBadStuffFromTitle(noteTitle);
+		if (noteTitle.length > 200) {
+			newTitle = noteTitle.substring(0, 200);
+		}
 		// Only rename file if no duplicate.
-		if (!FileUtility.isDuplicateNoteTitle(title)) {
+		if (!FileUtility.isDuplicateNoteTitle(newTitle)) {
 			this.removeNoteFile();
-			this.setNoteInfo(title);
+			this.setNoteInfo(newTitle);
 		}
 		this.saveFileContents(text);
 	}
@@ -67,7 +76,7 @@ public class Note : GLib.Object {
 		yield this.noteFile.replace_contents_async(text.data, null, false, FileCreateFlags.NONE, null, null);
 	}
 
-	public void save(string text) throws GLib.Error {
+	public void save(string text) {
 		if (text.strip() == "") {
 			this.removeNoteFile();
 		} else {
@@ -75,10 +84,15 @@ public class Note : GLib.Object {
 		}
 	}
 
-	private void saveFileContents(string text) throws GLib.Error {
+	private void saveFileContents(string text) {
 		Zystem.debug("ACTUALLY SAVING FILE");
 		// this.noteFile.replace_contents(text, text.length, null, false, FileCreateFlags.NONE, null, null);
-		this.noteFile.replace_contents(text.data, null, false, FileCreateFlags.NONE, null, null);
+		try {
+			this.noteFile.replace_contents(text.data, null, false, FileCreateFlags.NONE, null, null);
+		} catch (Error e) {
+			// Problem saving, so give it another title
+			this.rename(FileUtility.getTimestamp(), text);
+		}
 	}
 
 	private void removeNoteFile() {
@@ -86,7 +100,12 @@ public class Note : GLib.Object {
 
 		if (file.query_exists()) {
 			try {
-				file.delete();
+				try {
+					file.trash();
+				} catch (Error e) {
+					Zystem.debug("There was an error moving entry file to trash. Just deleting it.");
+					file.delete();
+				}
 			} catch (Error e) {
 				Zystem.debug("There was an error removing the entry file");
 			}

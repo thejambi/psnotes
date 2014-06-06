@@ -62,6 +62,8 @@ public class NotesFilter : GLib.Object {
 		this.treeSelection.mode = SelectionMode.NONE;
 		
 		try {
+			Gee.Set<string> results = new Gee.HashSet<string>();
+			
 			listmodel.clear();
 			listmodel.set_sort_column_id(0, SortType.ASCENDING);
 			// var notesList = new GLib.List<string>();
@@ -71,18 +73,38 @@ public class NotesFilter : GLib.Object {
 			FileEnumerator enumerator = notesDir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 			FileInfo fileInfo;
 
-			// Go through the files
+			// Go through the files to check for note titles (file names) that match filter text
 			while((fileInfo = enumerator.next_file()) != null) {
 				// string filename = fileInfo.get_name();
 				if (FileUtility.getFileExtension(fileInfo) == ".txt") {
+					// Check if name contains filter text
 					// Zystem.debug(FileUtility.getFileNameWithoutExtension(fileInfo));
 					string name = FileUtility.getFileNameWithoutExtension(fileInfo);
 					if (filterText.down() in name.down()) {
 						listmodel.append(out iter);
 						listmodel.set(iter, 0, name);
+						results.add(name);
 					}
 				}
 			}
+
+			enumerator = notesDir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
+			// Go through the files to search contents of notes for filter text
+			while((fileInfo = enumerator.next_file()) != null) {
+				// string filename = fileInfo.get_name();
+				if (FileUtility.getFileExtension(fileInfo) == ".txt") {
+					string name = FileUtility.getFileNameWithoutExtension(fileInfo);
+					if (!results.contains(name)) {
+						Note note = new Note(name);
+						string noteText = note.getContents();
+						if (filterText.down() in noteText.down()) {
+							listmodel.append(out iter);
+							listmodel.set(iter, 0, name);
+						}
+					}
+				}
+			}
+			
 		} catch(Error e) {
 			stderr.printf ("Error loading notes list: %s\n", e.message);
 		}

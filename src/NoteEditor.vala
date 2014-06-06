@@ -24,7 +24,7 @@ using GLib;
 public class NoteEditor : GLib.Object {
 
 	// Variables
-	private TextBuffer buffer;
+	public TextBuffer buffer { get; private set; }
 
 	//private ArrayList<string> highlightStrings;
 
@@ -74,6 +74,22 @@ public class NoteEditor : GLib.Object {
 		self.undos = []
 		self.redos = []
 		 */
+
+
+		this.createBoldTitleTag();
+	}
+
+	private void createBoldTitleTag() {
+		TextTag boldTag = this.buffer.create_tag("boldTitle");
+		boldTag.set_property("weight", Pango.Weight.BOLD);
+	}
+
+	private void setTitleBold() {
+		TextIter startIter;
+		this.buffer.get_iter_at_line(out startIter, 0);
+		TextIter endIter;
+		this.buffer.get_iter_at_line(out endIter, 1);
+		this.buffer.apply_tag_by_name("boldTitle", startIter, endIter);
 	}
 
 	private TextIter getStartIter() {
@@ -82,7 +98,7 @@ public class NoteEditor : GLib.Object {
 		return startIter;
 	}
 
-	private TextIter getEndIter() {
+	public TextIter getEndIter() {
 		TextIter endIter;
 		this.buffer.get_end_iter(out endIter);
 		return endIter;
@@ -121,6 +137,8 @@ public class NoteEditor : GLib.Object {
 		this.buffer.set_text(text);
 
 		this.connectSignals();
+
+		this.setTitleBold();	// ZLB!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
 	private TextIter getIterAtOffset(int offset) {
@@ -158,7 +176,7 @@ public class NoteEditor : GLib.Object {
 		this.buffer.place_cursor(this.getStartIter());
 	}
 
-	private TextIter getCurrentIter() {
+	public TextIter getCurrentIter() {
 		TextIter iter;
 		this.buffer.get_iter_at_offset(out iter, this.buffer.cursor_position);
 		return iter;
