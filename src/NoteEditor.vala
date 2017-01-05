@@ -24,14 +24,14 @@ using GLib;
 public class NoteEditor : GLib.Object {
 
 	// Variables
-	public TextBuffer buffer { get; private set; }
+	public SourceBuffer buffer { get; private set; }
 
 	//private ArrayList<string> highlightStrings;
 
-	private int undoMax;
+	//private int undoMax;
 
-	private ArrayList<Action> undos;
-	private ArrayList<Action> redos;
+	//private ArrayList<Action> undos;
+	//private ArrayList<Action> redos;
 
 	private ulong onInsertConnection;
 	private ulong onDeleteConnection;
@@ -39,18 +39,18 @@ public class NoteEditor : GLib.Object {
 	/**
 	 * Constructor for NoteEditor.
 	 */
-	public NoteEditor(TextBuffer buffer) {
+	public NoteEditor(DocumentView docView) {
 		//
-		this.buffer = buffer;
+		this.buffer = docView.getBuffer();
 
-		this.undoMax = 1000;
+		//this.undoMax = 1000;
 		//this.highlightStrings = new ArrayList<string>();
 		// foundTag??
 		//
 
 
-		this.undos = new ArrayList<Action>();
-		this.redos = new ArrayList<Action>();
+		//this.undos = new ArrayList<Action>();
+		//this.redos = new ArrayList<Action>();
 
 		this.connectSignals();
 		
@@ -129,8 +129,8 @@ public class NoteEditor : GLib.Object {
 	 * Start working on a new note. Sets the passed in text as the buffer text.
 	 */
 	public void startNewNote(string text) {
-		this.undos.clear();
-		this.redos.clear();
+		//this.undos.clear();
+		//this.redos.clear();
 
 		this.disconnectSignals();
 		
@@ -139,6 +139,8 @@ public class NoteEditor : GLib.Object {
 		this.connectSignals();
 
 		this.setTitleBold();	// ZLB!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		this.buffer.set_undo_manager(null);
 	}
 
 	private TextIter getIterAtOffset(int offset) {
@@ -182,7 +184,8 @@ public class NoteEditor : GLib.Object {
 		return iter;
 	}
 
-	public void undo() {
+	/*public void undo() {
+		Zystem.debug("IN UNDO");
 		//
 		if (this.undos.size == 0) {
 			Zystem.debug("Nothing to undo");
@@ -199,9 +202,10 @@ public class NoteEditor : GLib.Object {
 		this.connectSignals();
 		//this.insertEvent = this.buffer.connect("insert-text", this.onInsert);
 		//this.deleteEvent = this.buffer.connect("delete-range", this.onDelete);
-	}
+	}*/
 	
 	public Action doAction(Action action) {
+		Zystem.debug("IN doAction");
 		//
 		if (action.action == "delete") {
 			TextIter start = this.getIterAtOffset(action.offset);
@@ -218,7 +222,7 @@ public class NoteEditor : GLib.Object {
 		return action;
 	}
 
-	public void redo() {
+	/*public void redo() {
 		//
 
 		if (this.redos.size == 0) {
@@ -236,37 +240,20 @@ public class NoteEditor : GLib.Object {
 		this.connectSignals();
 
 		// this.highlight();
-	}
+	}*/
 
 	private void onInsertText(TextIter iter, string text, int length) {
 
 		// this.highlight();
 
 		Action cmd = new Action("delete", iter.get_offset(), text);
-		this.undos.add(cmd);
-		this.redos.clear();
+		//this.undos.add(cmd);
+		//this.redos.clear();
 
 		// Auto-bullets support
 		//if (text == "\n" && UserData.autoBulletsOn) {
 			//
 		//}
-
-		/*
-		 * self._highlight()
-		cmd = {"action":"delete","offset":iter.get_offset(),"text":text}
-		self._add_undo(cmd)
-		self.redos = []
-		if text == "\n" and self.auto_bullets:
-			cur_line = iter.get_line()
-			prev_line_iter = self.get_buffer().get_iter_at_line(cur_line)
-			pl_offset = prev_line_iter.get_offset()
-			pl_text = self.get_buffer().get_text(prev_line_iter, iter)
-			if pl_text.strip().find("*") == 0:
-				ws = ""
-				if not pl_text.startswith("*"):
-					ws = (pl_text.split("*")[0])
-				self._auto_bullet = ws + "* "
-						*/
 	}
 
 	private void onDeleteRange(TextIter startIter, TextIter endIter) {
@@ -277,34 +264,24 @@ public class NoteEditor : GLib.Object {
 		string text = this.buffer.get_text(startIter, endIter, false);
 		Zystem.debug("Text was: " + text);
 		Action cmd = new Action("insert", startIter.get_offset(), text);
-		this.addUndo(cmd);
+		//this.addUndo(cmd);
 	}
 
-	private void addUndo(Action cmd) {
+	/*private void addUndo(Action cmd) {
 
 		if (this.undos.size >= this.undoMax) {
 			// remove first? self.undos.
 		}
 
 		this.undos.add(cmd);
-
-		/*
-		 * #delete the oldest undo if undo maximum is in effect
-		if self.undo_max is not None and len(self.undos) >= self.undo_max:
-			del(self.undos[0])
-		self.undos.append(cmd)
-		*/
-	}
+	}*/
 
 	private void connectSignals() {
 		//
 		this.onInsertConnection = 
-			this.buffer.insert_text.connect((iter,text,length) => { this.onInsertText(iter, text, length); });
+			this.buffer.insert_text.connect((ref iter,text,length) => { this.onInsertText(iter, text, length); });
 		this.onDeleteConnection =
 			this.buffer.delete_range.connect((startIter,endIter) => { this.onDeleteRange(startIter, endIter); });
-		//this.calendar.day_selected.connect(() => { daySelected(); });
-		//ulong handler_id = foo.some_event.connect (() => { /* ... */ });
-		//foo.disconnect (handler_id);
 	}
 
 	private void disconnectSignals() {
@@ -314,15 +291,28 @@ public class NoteEditor : GLib.Object {
 		//foo.disconnect (handler_id);
 	}
 
+	public WordCount getWordCount() {
+		try {
+			var reg = new Regex("[\\s\\W]+", RegexCompileFlags.OPTIMIZE);//new Regex(" +");
+			string text = this.getText();//.replace("\n", " ");
+			string result = reg.replace (text, text.length, 0, " ");
+		
+			return new WordCount(result.strip().split(" ").length, result.length);
+		} catch (Error e) {
+			return new WordCount(0, 0);
+		}
+	}
 	
+}
 
+public class WordCount {
+	public int words { get; private set; }
+	public int chars { get; private set; }
 
-
-	
-	
-
-
-
+	public WordCount(int words, int chars) {
+		this.words = words;
+		this.chars = chars;
+	}
 }
 
 public class Action {

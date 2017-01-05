@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(psnotes, 0.7.1)
+AC_INIT(psnotes, 0.14.0)
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -19,8 +19,9 @@ dnl Check for vala
 AM_PROG_VALAC([0.10.0])
 
 
-PKG_CHECK_MODULES(PSNOTES, gdk-3.0
-[gtk+-3.0 gio-2.0 glib-2.0 gee-1.0 gtk+-3.0])
+PKG_CHECK_MODULES(PSNOTES, gee-0.8
+gtksourceview-3.0
+[gtk+-3.0 gio-2.0 gdk-3.0 gtk+-3.0 glib-2.0])
 
 
 AC_OUTPUT([

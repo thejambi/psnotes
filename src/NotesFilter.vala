@@ -28,7 +28,7 @@ public enum LoadRequestType {
 
 public class NotesFilter : GLib.Object {
 
-	private weak ListStore listmodel;
+	private weak Gtk.ListStore listmodel;
 	private weak TreeSelection treeSelection;
 
 	private int reloadCount;
@@ -39,7 +39,7 @@ public class NotesFilter : GLib.Object {
 	private string filterText;
 	
 	// Constructor
-	public NotesFilter(ListStore listmodel, TreeSelection treeSelection) {
+	public NotesFilter(Gtk.ListStore listmodel, TreeSelection treeSelection) {
 		this.listmodel = listmodel;
 		this.treeSelection = treeSelection;
 		this.loadRequested = false;
@@ -49,7 +49,6 @@ public class NotesFilter : GLib.Object {
 	}
 
 	public async void filter() {
-
 		Zystem.debug("Filter Text:" + this.filterText + "|");
 		
 		this.reloadCount++;
@@ -58,27 +57,69 @@ public class NotesFilter : GLib.Object {
 			return;
 		}
 
-//		this.treeSelection.unselect_all();
 		this.treeSelection.mode = SelectionMode.NONE;
 		
 		try {
 			Gee.Set<string> results = new Gee.HashSet<string>();
 			
 			listmodel.clear();
+
 			listmodel.set_sort_column_id(0, SortType.ASCENDING);
-			// var notesList = new GLib.List<string>();
+			
+			if (UserData.useAltSortType) {
+				listmodel.set_sort_func(0, (model, iterA, iterB) => {
+					Value value;
+					model.get_value(iterA, 0, out value);
+					string noteTitleA = value.get_string();
+					var noteA = new Note(noteTitleA);
+					//Zystem.debug("Note A: " + noteTitleA);
+
+					model.get_value(iterB, 0, out value);
+					string noteTitleB = value.get_string();
+					var noteB = new Note(noteTitleB);
+					//Zystem.debug("Note B: " + noteTitleB);
+
+					long compare = noteB.getModifiedTime() - noteA.getModifiedTime();
+					//Zystem.debug(compare.to_string());
+
+					if (compare > 0) {
+						return 1;
+					} else if (compare < 0) {
+						return -1;
+					} else {
+						return 0;
+					}
+				});
+			}
+			
 			TreeIter iter;
 
 			File notesDir = File.new_for_path(UserData.notesDirPath);
 			FileEnumerator enumerator = notesDir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 			FileInfo fileInfo;
 
+			UserData.inBook = false;
+
+			if (UserData.inChapter) {
+				listmodel.append(out iter);
+				listmodel.set(iter, 0, UserData.upToBook);
+			} else if (UserData.inFolder) {
+				listmodel.append(out iter);
+				listmodel.set(iter, 0, UserData.upToFolder);
+			}
+			
 			// Go through the files to check for note titles (file names) that match filter text
 			while((fileInfo = enumerator.next_file()) != null) {
-				// string filename = fileInfo.get_name();
-				if (FileUtility.getFileExtension(fileInfo) == ".txt") {
+				if (FileUtility.getFileExtension(fileInfo) == UserData.fileExtension) {
+					if (fileInfo.get_name() == UserData.bookDirMagicFilename) {
+						var note = new Note("title");
+						if (note.getContents().has_prefix("---")) {
+							UserData.inBook = true;
+							UserData.bookRoot = UserData.notesDirPath;
+							Zystem.debug("--- IN BOOK ---");
+						}
+					}
 					// Check if name contains filter text
-					// Zystem.debug(FileUtility.getFileNameWithoutExtension(fileInfo));
 					string name = FileUtility.getFileNameWithoutExtension(fileInfo);
 					if (filterText.down() in name.down()) {
 						listmodel.append(out iter);
@@ -91,8 +132,7 @@ public class NotesFilter : GLib.Object {
 			enumerator = notesDir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 			// Go through the files to search contents of notes for filter text
 			while((fileInfo = enumerator.next_file()) != null) {
-				// string filename = fileInfo.get_name();
-				if (FileUtility.getFileExtension(fileInfo) == ".txt") {
+				if (FileUtility.getFileExtension(fileInfo) == UserData.fileExtension) {
 					string name = FileUtility.getFileNameWithoutExtension(fileInfo);
 					if (!results.contains(name)) {
 						Note note = new Note(name);
@@ -101,6 +141,18 @@ public class NotesFilter : GLib.Object {
 							listmodel.append(out iter);
 							listmodel.set(iter, 0, name);
 						}
+					}
+				} else if (UserData.inBook) {
+					if (FileUtility.isDirectory(FileUtility.pathCombine(UserData.notesDirPath, fileInfo.get_name()))) {
+						listmodel.append(out iter);
+						listmodel.set(iter, 0, UserData.chapterKey + fileInfo.get_name());
+					}
+				} else {
+					Zystem.debug("I'm an ELSE!");
+					if (FileUtility.isDirectory(FileUtility.pathCombine(UserData.notesDirPath, fileInfo.get_name()))) {
+						Zystem.debug("I'm an FolderRRR!");
+						listmodel.append(out iter);
+						listmodel.set(iter, 0, UserData.folderKey + fileInfo.get_name());
 					}
 				}
 			}
@@ -148,7 +200,17 @@ public class NotesFilter : GLib.Object {
 	public void setFilterText(string text) {
 		this.filterText = text;
 	}
-	
+
+	/*private string getNoteTitle(string text) {
+		var newText = text;
+		if (UserData.inBook || UserData.inChapter) {
+			newText = text.replace(UserData.chapterKey, "00000");
+			newText = text.replace(UserData.upToBook, "00000");
+			return newText;
+		} else {
+			return text;
+		}
+	}*/
 
 }
 

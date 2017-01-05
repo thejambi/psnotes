@@ -25,7 +25,7 @@ psnotes is free software: you can redistribute it and/or modify it
 using Gtk;
 using Pango;
 
-public class HyperTextView : Gtk.TextView {
+public class HyperTextView : Gtk.SourceView {
 
 	private Gdk.Cursor hand_cursor;
 	private Gdk.Cursor regular_cursor;
@@ -39,7 +39,16 @@ public class HyperTextView : Gtk.TextView {
 	private uint tag_timeout = 0;
 	private Gtk.TextTag tag_link;
 
+	private Gtk.SourceBuffer code_buffer;
+
 	construct {
+		// need to setup language
+        var manager = Gtk.SourceLanguageManager.get_default ();
+        var language = manager.guess_language (null, "text/x-markdown");
+        code_buffer = new Gtk.SourceBuffer.with_language (language);
+
+		this.buffer = code_buffer;
+		
 		Gtk.TextIter iter;
 
 		this.hand_cursor = new Gdk.Cursor (Gdk.CursorType.HAND2);
@@ -384,4 +393,116 @@ public class HyperTextView : Gtk.TextView {
 		}
 	}
 
+	public Gtk.SourceBuffer getBuffer() {
+		return code_buffer;
+	}
+
 }
+
+
+
+public class DocumentView : Gtk.ScrolledWindow {
+    private HyperTextView code_view;
+    //private Gtk.SourceBuffer code_buffer;
+
+    public signal void changed ();
+
+    public DocumentView () {
+        setup_code_view ();
+    }
+	
+	public Gtk.SourceBuffer getBuffer() {
+		//return code_buffer;
+		return code_view.getBuffer();
+	}
+
+    public void set_text (string text, bool new_file = false) {
+        if (new_file) {
+            getBuffer().changed.disconnect (trigger_changed);
+        }
+
+        getBuffer().text = text;
+
+        if (new_file) {
+            getBuffer().changed.connect (trigger_changed);
+        }
+    }
+
+    public void reset () {
+        getBuffer().text = "";
+    }
+
+    public string get_text () {
+        return code_view.buffer.text;
+    }
+
+    public string get_selected_text () {
+        var start = Gtk.TextIter();
+        var end = Gtk.TextIter();
+        code_view.buffer.get_selection_bounds(out start, out end);
+        return code_view.buffer.get_text(start, end, true);
+    }
+
+    public void give_focus () {
+        code_view.grab_focus ();
+    }
+
+    public void set_font (string name) {
+        var font = Pango.FontDescription.from_string (name);
+        code_view.override_font (font);
+    }
+
+    public void set_scheme (string id) {
+        var style_manager = Gtk.SourceStyleSchemeManager.get_default ();
+        var style = style_manager.get_scheme (id);
+        //code_buffer.set_style_scheme (style);
+    }
+
+    private string get_default_scheme () {
+        var style_manager = Gtk.SourceStyleSchemeManager.get_default ();
+        if ("solarized-light" in style_manager.scheme_ids) { // In Gnome
+            return "solarized-light";
+        } else { // In Elementary
+            return "solarizedlight";
+        }
+    }
+
+    private void trigger_changed () {
+        changed ();
+    }
+
+    private void setup_code_view () {
+        code_view = new HyperTextView();
+
+        getBuffer().changed.connect (trigger_changed);
+        
+        // make it look pretty
+        this.setDefaultMargins();
+        code_view.pixels_above_lines = 5;
+        // wrap text between words
+        code_view.wrap_mode = Gtk.WrapMode.WORD;
+        code_view.show_line_numbers = false;
+
+        this.set_scheme (this.get_default_scheme ());
+
+		code_view.pixels_inside_wrap = UserData.lineHeight;
+
+        add (code_view);
+    }
+
+	public void setDefaultMargins() {
+		this.setMargins(UserData.defaultMargins);
+	}
+
+	public void setMargins(int margin) {
+		code_view.left_margin = margin;
+		code_view.right_margin = margin;
+	}
+
+	public void beefUpAMargin() {
+		code_view.left_margin = code_view.left_margin + 1;
+	}
+}
+
+
+

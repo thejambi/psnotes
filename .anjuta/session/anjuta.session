@@ -1,22 +1,25 @@
-
 [Anjuta]
 Maximized=1
-Geometry=1366x720+0+26
-
-[Project Manager]
-Shortcut=psnotes//src//psnotes
-Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes%%%psnotes//PSNOTES
-
-[File Loader]
-Files=../../src/psnotes.vala#25
-
-[Document Manager]
-bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
+Geometry=1440x870+0+30
 
 [Execution]
 Program uri=../../src/psnotes
 Run in terminal=2
-Working directories=../../../psnotes
+Working directories=../../.
+
+[File Loader]
+Files=../../src/psnotes.vala#19%%%../../src/Note.vala#149%%%../../src/UserData.vala#113%%%../../src/NotesFilter.vala#109%%%../../src/FileUtility.vala#129
+
+[Document Manager]
+bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
+
+[Search Box]
+Case Sensitive=1
+Highlight Match=1
+
+[Project Manager]
+Shortcut=psnotes//src//psnotes
+Expand=psnotes%%%psnotes//src%%%psnotes//src//psnotes%%%psnotes//PSNOTES
 
 [Build]
 Configuration list=1:Default:%%%1:Debug:Debug%%%1:Profiling:Profiling%%%1:Optimized:Optimized

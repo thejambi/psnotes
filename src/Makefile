@@ -153,23 +153,23 @@ OTOOL64 =
 PACKAGE = psnotes
 PACKAGE_BUGREPORT = 
 PACKAGE_NAME = psnotes
-PACKAGE_STRING = psnotes 0.7.1
+PACKAGE_STRING = psnotes 0.14.0
 PACKAGE_TARNAME = psnotes
 PACKAGE_URL = 
-PACKAGE_VERSION = 0.7.1
+PACKAGE_VERSION = 0.14.0
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 PKG_CONFIG_LIBDIR = 
 PKG_CONFIG_PATH = 
-PSNOTES_CFLAGS = -pthread -I/usr/include/gtk-3.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/atk-1.0 -I/usr/include/gee-1.0  
-PSNOTES_LIBS = -lgee -lgtk-3 -lgdk-3 -latk-1.0 -lgio-2.0 -lpangocairo-1.0 -lgdk_pixbuf-2.0 -lcairo-gobject -lpango-1.0 -lcairo -lgobject-2.0 -lglib-2.0  
+PSNOTES_CFLAGS = -pthread -I/usr/include/gee-0.8 -I/usr/include/gtksourceview-3.0 -I/usr/include/libxml2 -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include -I/usr/include/gtk-3.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/mirclient -I/usr/include/mircommon -I/usr/include/mircookie -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/pango-1.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng12 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include
+PSNOTES_LIBS = -lgee-0.8 -lgtksourceview-3.0 -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -latk-1.0 -lcairo-gobject -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0
 RANLIB = ranlib
 SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/bash
 STRIP = strip
 VALAC = /usr/bin/valac
-VERSION = 0.7.1
+VERSION = 0.14.0
 abs_builddir = /home/zach/Programming/psnotes/src
 abs_srcdir = /home/zach/Programming/psnotes/src
 abs_top_builddir = /home/zach/Programming/psnotes
@@ -233,9 +233,9 @@ AM_CFLAGS = \
 	 -g
 
 psnotes_SOURCES = \
-	psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala NotesFilter.vala NotesMonitor.vala UserData.vala UserSettingsManager.vala Zystem.vala HyperTextView.vala
+	psnotes.vala config.vapi FileUtility.vala Note.vala NoteEditor.vala NotesFilter.vala NotesMonitor.vala UserData.vala UserSettingsManager.vala Zystem.vala HyperTextView.vala  
 
-psnotes_VALAFLAGS = --pkg gio-2.0 --pkg glib-2.0 --pkg gee-1.0 --pkg gtk+-3.0 --pkg gdk-3.0  \
+psnotes_VALAFLAGS = --pkg gio-2.0 --pkg glib-2.0 --pkg gee-0.8 --pkg gtk+-3.0 --pkg gdk-3.0 --pkg gtksourceview-3.0  \
 	--pkg gtk+-3.0
 
 psnotes_LDFLAGS = \

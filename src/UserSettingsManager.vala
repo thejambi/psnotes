@@ -32,6 +32,10 @@ public class UserSettingsManager : GLib.Object {
 	public static const string windowWidthKey = "width";
 	public static const string windowHeightKey = "height";
 	public static const string panePositionKey = "panePosition";
+	public static const string showWordCountKey = "showWordCount";
+	public static const string fontKey = "font";
+	public static const string altSortTypeKey = "alternateSortType";
+	public static const string fileExtKey = "fileExtension";
 
 	// Constructor
 	public UserSettingsManager () {
@@ -84,6 +88,33 @@ public class UserSettingsManager : GLib.Object {
 		}
 
 		try {
+			UserData.useAltSortType = keyFile.get_boolean(this.notesDirGroup, this.altSortTypeKey);
+			Zystem.debug("Got sort type alpha");
+		} catch (KeyFileError e) {
+			// Set default
+			UserData.useAltSortType = false;
+		}
+
+		try {
+			UserData.showWordCount = keyFile.get_boolean(notesDirGroup, showWordCountKey);
+		} catch (KeyFileError e) {
+			// Set default
+			UserData.showWordCount = true;
+		}
+
+		try {
+			UserData.fontString = keyFile.get_string(notesDirGroup, fontKey);
+		} catch (KeyFileError e) {
+			UserData.fontString = "";
+		}
+
+		try {
+			UserData.fileExtension = keyFile.get_string(notesDirGroup, fileExtKey);
+		} catch (KeyFileError e) {
+			UserData.fileExtension = UserData.fileExtTxt;
+		}
+
+		try {
 			UserData.windowWidth = keyFile.get_integer(this.notesDirGroup, this.windowWidthKey);
 			UserData.windowHeight = keyFile.get_integer(this.notesDirGroup, this.windowHeightKey);
 			UserData.panePosition = keyFile.get_integer(this.notesDirGroup, this.panePositionKey);
@@ -114,6 +145,14 @@ public class UserSettingsManager : GLib.Object {
 	public void setInt(string key, int val) {
 		keyFile.set_integer(notesDirGroup, key, val);
 		writeKeyFile();
+	}
+
+	public void setBool(string key, bool val) {
+		keyFile.set_boolean(notesDirGroup, key, val);
+	}
+
+	public void setString(string key, string val) {
+		keyFile.set_string(notesDirGroup, key, val);
 	}
 
 	public void addNotebook(string name, string path) {

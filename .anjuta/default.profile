@@ -5,9 +5,9 @@
                  attribute="Location"
                  value="anjuta-terminal:TerminalPlugin"/>
     </plugin>
-    <plugin name="Git" mandatory="no">
+    <plugin name="Code Snippets" mandatory="no">
         <require group="Anjuta Plugin"
                  attribute="Location"
-                 value="anjuta-git:Git"/>
+                 value="anjuta-snippets-manager:SnippetsManagerPlugin"/>
     </plugin>
 </anjuta>

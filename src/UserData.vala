@@ -20,18 +20,41 @@ PSNotes is free software: you can redistribute it and/or modify it
 using Gee;
 
 class UserData : Object {
+
+	public static const string bookDirMagicFilename = "title.txt";
+	public static const string chapterKey = "/# ";
+	public static const string upToBook = "/# ...";
+	public static string bookRoot { get; set; }
+
+	 public static const string folderKey = "/ ";
+	 public static const string upToFolder = "/ ...";
+	 public static bool inFolder { get; set; }
 	
 	public static string defaultNotesDirName { get; private set; }
 	
 	public static string notesDirPath { get; set; }
+	public static bool inBook { get; set; }
+	public static bool inChapter { get; set; }
 	
 	public static string homeDirPath { get; private set; }
 
 	public static bool seldomSave { get; set; default = true; }
 
+	public static bool showWordCount { get; set; default = true; }
+	public static string fontString { get; set; default = ""; }
+	public static bool useAltSortType { get; set; default = true; }
+
 	public static int windowWidth { get; set; default = 530; }
 	public static int windowHeight { get; set; default = 400; }
 	public static int panePosition { get; set; default = 166; }
+
+	public static string fileExtension { get; set; default = ".txt"; }
+
+	public static int defaultMargins { get; set; default = 6; }
+	public static int lineHeight { get; set; default = 6; }
+
+	public static const string fileExtTxt = ".txt";
+	public static const string fileExtMd = ".md";
 
 	private static UserSettingsManager settings;
 
@@ -51,8 +74,6 @@ class UserData : Object {
 	}
 
 	public static void setNotesDir(string path) {
-		//
-		Zystem.debug("Setting Notes directory");
 		notesDirPath = path;
 		settings.setNotesDir(path);
 	}
@@ -102,7 +123,29 @@ class UserData : Object {
 		return settings.getNotebookList();
 	}
 
-	
+	public static void setShowWordCount(bool show) {
+		settings.setBool(UserSettingsManager.showWordCountKey, show);
+		showWordCount = show;
+	}
+
+	public static void setFont(string fontStr) {
+		settings.setString(UserSettingsManager.fontKey, fontStr);
+		fontString = fontStr;
+	}
+
+	public static void setUseAltSortType(bool altSort) {
+		settings.setBool(UserSettingsManager.altSortTypeKey, altSort);
+		useAltSortType = altSort;
+		Zystem.debug("Use alt sort: " + altSort.to_string());
+		if (UserData.inBook || UserData.inChapter) {
+			useAltSortType = false;
+		}
+	}
+
+	public static void setFileExtension(string ext) {
+		fileExtension = ext;
+		settings.setString(UserSettingsManager.fileExtKey, ext);
+	}
 
 	
 }

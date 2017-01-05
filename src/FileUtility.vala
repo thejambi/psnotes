@@ -30,6 +30,11 @@ class FileUtility : GLib.Object {
 		GLib.DirUtils.create_with_parents(dirPath, 0775);
 	}
 
+	public static bool isDirectory(string dirPath) {
+		var file = File.new_for_path(dirPath);
+		return file.query_file_type (0) == FileType.DIRECTORY;
+	}
+
 	/**
 	 * Return the file extension from the given fileInfo.
 	 */
@@ -43,6 +48,12 @@ class FileUtility : GLib.Object {
 	 */
 	public static string getFileNameWithoutExtension(FileInfo file) {
 		return file.get_name().replace(getFileExtension(file), "");
+	}
+
+	public static string getNameFromPath(string path) {
+		var file = File.new_for_path(path);
+		var fileInfo = file.query_info(FileAttribute.STANDARD_NAME, FileQueryInfoFlags.NONE);
+		return fileInfo.get_name();
 	}
 
 	/**
@@ -60,7 +71,7 @@ class FileUtility : GLib.Object {
 
 			// Go through the files
 			while((fileInfo = enumerator.next_file()) != null) {
-				if (FileUtility.getFileExtension(fileInfo) == ".txt"
+				if (FileUtility.getFileExtension(fileInfo) == UserData.fileExtension
 						&& FileUtility.getFileNameWithoutExtension(fileInfo) == title) {
 					return true;
 				}
@@ -115,6 +126,13 @@ class FileUtility : GLib.Object {
 		DateTime dateTime = new GLib.DateTime.now_local();
 		return dateTime.format("_%Y%m%d_%H%M%S");
 	}
+
+	 public static string getParentFolderPath(string dirPath) {
+		 Zystem.debug(dirPath);
+		 var parentPath = dirPath.slice(0, dirPath.last_index_of("/"));
+		 Zystem.debug(parentPath);
+		 return parentPath;
+	 }
 
 	/**
 	 * 
