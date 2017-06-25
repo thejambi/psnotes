@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2017 Zach Burnham <thejambi@gmail.com> -->
+<component type="desktop">
+    <id>com.github.thejambi.psnotes.desktop</id>
+    <metadata_license>CC0</metadata_license>
+    <name>P.S. Notes.</name>
+    <summary>Notes, plain and simple.</summary>
+    <description>
+        <p>P.S. Notes is a simple plain-text note taking app designed to work with similar minimal plain-text note taking mobile apps.</p>
+    </description>
+    <custom>
+        <value key="x-appcenter-color-primary">#603461</value>
+        <value key="x-appcenter-color-primary-text">rgb(255, 255, 255)</value>
+        <value key="x-appcenter-suggested-price">1</value>
+    </custom>
+</component>

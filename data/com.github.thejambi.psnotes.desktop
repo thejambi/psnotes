@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=P.S. Notes.
+GenericName=Plain-text notes
+Comment=Future-proof, plain-text note taking app
+Categories=GTK;Utility;
+Exec=com.github.thejambi.psnotes
+Icon=application-default-icon
+Terminal=false
+Type=Application
+X-GNOME-Gettext-Domain=psnotes
+Keywords=PS;Notes;Plain;Text;Note
