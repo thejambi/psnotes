@@ -1,4 +1,4 @@
-Source: psnotes
+Source: com.github.thejambi.psnotes
 Section: x11
 Priority: extra
 Maintainer: Zach Burnham <thejambi@gmail.com>
@@ -12,7 +12,7 @@ Build-Depends: debhelper, autotools-dev,
  cmake (>= 2.8.7)
 Standards-Version: 3.9.3
 
-Package: psnotes
+Package: com.github.thejambi.psnotes
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: P.S. Notes.
