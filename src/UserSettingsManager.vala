@@ -32,6 +32,7 @@ public class UserSettingsManager : GLib.Object {
 	public static const string windowWidthKey = "width";
 	public static const string windowHeightKey = "height";
 	public static const string panePositionKey = "panePosition";
+	public static const string marginsKey = "margins";
 	public static const string showWordCountKey = "showWordCount";
 	public static const string fontKey = "font";
 	public static const string altSortTypeKey = "alternateSortType";
@@ -118,6 +119,7 @@ public class UserSettingsManager : GLib.Object {
 			UserData.windowWidth = keyFile.get_integer(this.notesDirGroup, this.windowWidthKey);
 			UserData.windowHeight = keyFile.get_integer(this.notesDirGroup, this.windowHeightKey);
 			UserData.panePosition = keyFile.get_integer(this.notesDirGroup, this.panePositionKey);
+			UserData.defaultMargins = keyFile.get_integer(this.notesDirGroup, this.marginsKey);
 		} catch (KeyFileError e) {
 			Zystem.debug("Error loading window size; using default.");
 		}

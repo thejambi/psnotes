@@ -170,6 +170,13 @@ public class NoteEditor : GLib.Object {
 		this.buffer.insert(ref startIter, text, text.length);
 	}
 
+	public void insertAfterCursor(string text) {
+		TextIter startIter = this.getCurrentIter();
+		this.buffer.insert(ref startIter, text, text.length);
+		startIter.backward_chars(text.length);
+		this.buffer.place_cursor(startIter);
+	}
+
 	public void cursorToEnd() {
 		this.buffer.place_cursor(this.getEndIter());
 	}
@@ -183,6 +190,132 @@ public class NoteEditor : GLib.Object {
 		this.buffer.get_iter_at_offset(out iter, this.buffer.cursor_position);
 		return iter;
 	}
+
+	public void insertAtIter(TextIter iter, string text) {
+		this.buffer.insert(ref iter, text, text.length);
+	}
+
+	public void insertAfterIter(TextIter iter, string text) {
+		this.buffer.insert(ref iter, text, text.length);
+		iter.backward_chars(text.length);
+		this.buffer.place_cursor(iter);
+	}
+
+	/************** Markdown **************/
+	public void simpleMarkdownSurround(string str) {
+		if (this.buffer.has_selection) {
+			// Surrounding selected text
+			TextIter beginIter;
+			TextIter endIter;
+			this.buffer.get_selection_bounds(out beginIter, out endIter);
+			this.insertAtIter(beginIter, str);
+			// Need to recalculate endIter...
+			this.buffer.get_selection_bounds(out beginIter, out endIter);
+			this.insertAtIter(endIter, str);
+		} else {
+			// No selection, just surround cursor position
+			this.insertAtCursor(str);
+			this.insertAfterCursor(str);
+		}
+	}
+	
+	public void markdownSurround(string str) {
+		this.simpleMarkdownSurround(str);
+	}
+
+	private string getHeadingStr(int level, bool includeSpace = true) {
+		var headingStr = "";
+		for (var i = 0; i < level; i++) {
+			headingStr += "#";
+		}
+		if (includeSpace && level != 0) {
+			headingStr += " ";
+		}
+		return headingStr;
+	}
+
+	private int getMarkdownHeadingLevel() {
+		TextIter currentIter = this.getCurrentIter();
+		
+		TextIter lineStartIter = this.getCurrentIter();
+		lineStartIter.set_line(currentIter.get_line());
+
+		TextIter lineEndIter = this.getCurrentIter();
+		lineEndIter.set_line(currentIter.get_line());
+		lineEndIter.forward_to_line_end();
+
+		var lineText = this.buffer.get_text(lineStartIter, lineEndIter, true);
+		Zystem.debug(lineText);
+
+		var hasHeading = false;
+		hasHeading = Regex.match_simple("^#+ [\\s\\S]*", lineText);
+		Zystem.debug(hasHeading.to_string());
+
+		// Get heading level number
+		var existingLevel = 0;
+		if (hasHeading) {
+			for (int i=0; i < lineText.char_count(); i++) {
+				string ch = lineText.get_char(lineText.index_of_nth_char(i)).to_string();
+				if (ch == "#") {
+					existingLevel++;
+				} else {
+					break;
+				}
+			}
+			Zystem.debug(existingLevel.to_string());
+		}
+		return existingLevel;
+	}
+
+	public void insertMarkdownHeading(int level) {
+		// get heading string
+		var headingStr = this.getHeadingStr(level);
+
+		// Does line contain a heading already?
+		var existingLevel = this.getMarkdownHeadingLevel();
+
+		if (level == existingLevel) {
+			level = 0;
+			headingStr = this.getHeadingStr(0);
+		}
+
+		TextIter currentIter = this.getCurrentIter();
+		
+		TextIter lineStartIter = this.getCurrentIter();
+		lineStartIter.set_line(currentIter.get_line());
+
+		// If has heading, change it, else insert it
+
+		if (existingLevel > 0) {
+			var levelsToAdd = level - existingLevel;
+			if (levelsToAdd > 0) {
+				// Insert
+				this.insertAtIter(lineStartIter, this.getHeadingStr(levelsToAdd, false));
+			} else if (levelsToAdd < 0) {
+				// Delete
+				TextIter deleteToHereIter = this.getCurrentIter();
+				deleteToHereIter.set_line(currentIter.get_line());
+				deleteToHereIter.forward_chars(levelsToAdd*-1);
+				if (levelsToAdd*-1 == existingLevel) {
+					deleteToHereIter.forward_chars(1);
+				}
+				this.buffer.@delete(ref lineStartIter, ref deleteToHereIter);
+			}
+		} else {
+			this.insertAtIter(lineStartIter, headingStr);
+		}
+
+		// Cursor keeps position, no cursor edit needed.
+	}
+
+	public void adjustMarkdownHeading(int levels) {
+		var existingLevel = this.getMarkdownHeadingLevel();
+		var targetHeadingLevel = existingLevel + levels;
+		if (targetHeadingLevel >= 0) {
+			this.insertMarkdownHeading(targetHeadingLevel);
+		}
+	}
+	/**************  **************/
 
 	/*public void undo() {
 		Zystem.debug("IN UNDO");
@@ -327,4 +460,10 @@ public class Action {
 		this.offset = offset;
 	}
 
+}
+
+public class MarkdownStrings {
+	public const string BOLD = "**";
+	public const string ITALICS = "_";
+	public const string CODE_TICK = "`";
 }

@@ -32,7 +32,14 @@ public class Main : Window {
 			"Ctrl+O: Choose notes folder\n" + 
 			"Ctrl+=: Increase font size\n" + 
 			"Ctrl+-: Decrease font size\n" + 
-			"Ctrl+0: Reset font size";
+			"Ctrl+0: Reset font size\n" +
+			"Ctrl+A, then Delete: Delete current note\n\n" + 
+			"## Markdown\n" +
+			"- Ctrl+B: Bold\n" + 
+			"- Ctrl+I: Italics\n" + 
+			"- Ctrl+[1-6]: Heading Level\n" + 
+			"- Ctrl+\\: Increase Heading Level\n" + 
+			"- Ctrl+Shift+\\: Decrease Heading Level";
 
 	private int width;
 	private int height;
@@ -512,6 +519,20 @@ public class Main : Window {
 		}
 	}
 
+	public void adjustMargins(int amount) {
+		if (!this.menuWriteMode.active) {
+			UserData.defaultMargins += amount;
+			if (UserData.defaultMargins < 0) {
+				UserData.defaultMargins = 0;
+			}
+			if (UserData.defaultMargins > (this.noteTextView.get_allocated_width() - 2) / 2) {
+				UserData.defaultMargins = (this.noteTextView.get_allocated_width() - 2) / 2;
+			}
+			this.noteTextView.setMargins(UserData.defaultMargins);
+			this.wordCountLabel.set_text(UserData.defaultMargins.to_string());
+		}
+	}
+
 	public bool onKeyPress(Gdk.EventKey key) {
 		uint keyval;
         keyval = key.keyval;
@@ -532,6 +553,15 @@ public class Main : Window {
 			switch (keyName) {
 				case "Z":
 					//this.editor.redo();
+					break;
+				case "exclam":   // 1
+					this.adjustMargins(-1);
+					break;
+				case "at":   // 2
+					this.adjustMargins(1);
+					break;
+				case "bar":
+					this.editor.adjustMarkdownHeading(-1);
 					break;
 				default:
 					Zystem.debug("What should Ctrl+Shift+" + keyName + " do?");
@@ -580,25 +610,38 @@ public class Main : Window {
 						chappyCompy.compileEPub();
 					}
 					break;
-				case "2":
-					if (!this.menuWriteMode.active) {
-						UserData.defaultMargins += 1;
-						if (UserData.defaultMargins > (this.noteTextView.get_allocated_width() - 2) / 2) {
-							UserData.defaultMargins = (this.noteTextView.get_allocated_width() - 2) / 2;
-						}
-						this.noteTextView.setMargins(UserData.defaultMargins);
-						this.wordCountLabel.set_text(UserData.defaultMargins.to_string());
-					}
+				case "b":
+					this.editor.markdownSurround(MarkdownStrings.BOLD);
+					break;
+				case "i":
+					this.editor.markdownSurround(MarkdownStrings.ITALICS);
+					break;
+				case "k":
+					this.editor.markdownSurround(MarkdownStrings.CODE_TICK);
+					break;
+				case "l":
+					//this.editor.markdownLink();
 					break;
 				case "1":
-					if (!this.menuWriteMode.active) {
-						UserData.defaultMargins -= 1;
-						if (UserData.defaultMargins < 0) {
-							UserData.defaultMargins = 0;
-						}
-						this.noteTextView.setMargins(UserData.defaultMargins);
-						this.wordCountLabel.set_text(UserData.defaultMargins.to_string());
-					}
+					this.editor.insertMarkdownHeading(1);
+					break;
+				case "2":
+					this.editor.insertMarkdownHeading(2);
+					break;
+				case "3":
+					this.editor.insertMarkdownHeading(3);
+					break;
+				case "4":
+					this.editor.insertMarkdownHeading(4);
+					break;
+				case "5":
+					this.editor.insertMarkdownHeading(5);
+					break;
+				case "6":
+					this.editor.insertMarkdownHeading(6);
+					break;
+				case "backslash":
+					this.editor.adjustMarkdownHeading(1);
 					break;
 				default:
 					Zystem.debug("What should Ctrl+" + keyName + " do?");
@@ -923,6 +966,10 @@ public class Main : Window {
 		// Save pane position
 		Zystem.debug("Pane position: " + this.paned.position.to_string());
 		UserData.savePanePosition(this.paned.position);
+
+		// Save margins
+		Zystem.debug("Text area margins: " + UserData.defaultMargins.to_string());
+		UserData.saveTextAreaMargins();
 		
 		Gtk.main_quit();
 	}

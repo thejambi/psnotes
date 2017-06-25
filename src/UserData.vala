@@ -98,6 +98,10 @@ class UserData : Object {
 		settings.setInt(UserSettingsManager.panePositionKey, position);
 	}
 
+	public static void saveTextAreaMargins() {
+		settings.setInt(UserSettingsManager.marginsKey, UserData.defaultMargins);
+	}
+
 	public static string getArchivedNotesDir() {
 		// Check if exists, if not, create
 		string path = FileUtility.pathCombine(notesDirPath, "Archive");
