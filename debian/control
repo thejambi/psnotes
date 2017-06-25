@@ -1,0 +1,19 @@
+Source: psnotes
+Section: x11
+Priority: extra
+Maintainer: Zach Burnham <thejambi@gmail.com>
+Build-Depends: debhelper, autotools-dev, 
+ libgee-0.8-dev,
+ libgdk-pixbuf2.0-dev (>= 2.26.1),
+ libglib2.0-dev (>= 2.32.1),
+ libgtk-3-dev (>= 3.4.1),
+ libgtksourceview-3.0-dev,
+ valac,
+ cmake (>= 2.8.7)
+Standards-Version: 3.9.3
+
+Package: psnotes
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: P.S. Notes.
+ Notes, plain and simple.
