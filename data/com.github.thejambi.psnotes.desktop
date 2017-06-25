@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=P.S. Notes.
 GenericName=Plain-text notes
-Comment=Future-proof, plain-text note taking app
+Comment=Notes, plain and simple.
 Categories=GTK;Utility;
 Exec=com.github.thejambi.psnotes
 Icon=com.github.thejambi.psnotes
