@@ -922,7 +922,7 @@ public class Main : Window {
 		about.set_program_name("P.S. Notes.");
 		about.comments = "Notes, plain and simple.";
 		about.website = "http://burnsoftware.wordpress.com/p-s-notes";
-		about.logo_icon_name = "psnotes";
+		about.logo_icon_name = "com.github.thejambi.psnotes";
 		about.set_copyright("by Zach Burnham");
 		about.run();
 		about.hide();
