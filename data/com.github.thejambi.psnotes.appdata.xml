@@ -5,8 +5,22 @@
     <metadata_license>CC0</metadata_license>
     <name>P.S. Notes.</name>
     <summary>Notes, plain and simple.</summary>
+    <developer_name>Zach Burnham</developer_name>
+    <url type="homepage">https://burnsoftware.wordpress.com/p-s-notes/</url>
+    <screenshots>
+        <screenshot type="default">
+            <image>https://raw.githubusercontent.com/thejambi/psnotes/master/data/screenshot.png</image>
+        </screenshot>
+    </screenshots>
     <description>
-        <p>P.S. Notes is a simple plain-text note taking app designed to work with similar minimal plain-text note taking mobile apps.</p>
+        <p>P.S. Notes is a simple plain-text note taking app designed to work with similar minimal plain-text note taking mobile apps All notes are saved behind the scenes in plain text.</p>
+        <ul>
+            <li>Easily create, delete, and archive notes</li>
+            <li>Manage any number of notebooks and switch between them any time</li>
+            <li>See simple <strong>markdown</strong> <em>syntax highlighting</em> as you type, and even apply markdown styles with familiar keyboard shortcuts</li>
+            <li>You control your files - You can easily manage your notes files in order to sync them and access them from a mobile device</li>
+            <li>Support for subfolders within notebook folders</li>
+        </ul>
     </description>
     <custom>
         <value key="x-appcenter-color-primary">#603461</value>
