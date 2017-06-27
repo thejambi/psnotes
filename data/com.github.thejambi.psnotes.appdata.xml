@@ -13,17 +13,16 @@
         </screenshot>
     </screenshots>
     <description>
-        <p>P.S. Notes is a simple plain-text note taking app designed to work with similar minimal plain-text note taking mobile apps All notes are saved behind the scenes in plain text.</p>
+        <p>Note-taking and writing app designed to work with minimal plain-text mobile apps.</p>
         <ul>
-            <li>Easily create, delete, and archive notes</li>
             <li>Manage any number of notebooks and switch between them any time</li>
-            <li>See simple <strong>markdown</strong> <em>syntax highlighting</em> as you type, and even apply markdown styles with familiar keyboard shortcuts</li>
-            <li>You control your files - You can easily manage your notes files in order to sync them and access them from a mobile device</li>
+            <li>See simple markdown syntax highlighting as you type, and apply and remove markdown styles with familiar keyboard shortcuts</li>
+            <li>Lets you manage your notes files to view them outside of P.S. Notes or to sync them online and access them from a mobile device</li>
             <li>Support for subfolders within notebook folders</li>
         </ul>
     </description>
     <custom>
-        <value key="x-appcenter-color-primary">#603461</value>
+        <value key="x-appcenter-color-primary">#285151</value>
         <value key="x-appcenter-color-primary-text">rgb(255, 255, 255)</value>
         <value key="x-appcenter-suggested-price">1</value>
     </custom>
