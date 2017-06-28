@@ -216,6 +216,15 @@ public class ChapterCompiler : GLib.Object {
 			Zystem.debug(name);
 			var note = new Note(name);
 			var noteText = note.getContents().strip();
+
+			// Remove HTML comments
+			try {
+				Regex regex = new Regex ("<!--([\\s\\S]*?)-->");  // Regex for HTML comments
+				noteText = regex.replace (noteText, noteText.length, 0, "");
+			} catch (RegexError e) {
+				stdout.printf ("Regex Error: %s\n", e.message);
+			}
+			
 			chapterText += noteText + "\n\n";
 		}
 
