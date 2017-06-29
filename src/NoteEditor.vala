@@ -214,13 +214,120 @@ public class NoteEditor : GLib.Object {
 			this.insertAtIter(endIter, str);
 		} else {
 			// No selection, just surround cursor position
+			// Ideally, grab current word and surround that?
 			this.insertAtCursor(str);
 			this.insertAfterCursor(str);
 		}
 	}
 	
-	public void markdownSurround(string str) {
-		this.simpleMarkdownSurround(str);
+	public void toggleMarkdownSurround(string str) {
+		if (this.cursorSurrounded(str)) {
+			Zystem.debug("Need to un-surround!");
+			this.unsurround(str);
+		} else {
+			this.simpleMarkdownSurround(str);
+		}
+	}
+
+	private void unsurround(string str) {
+		// Remove "str" from front of selection or just before selection
+		// Remove "str" from end of selection or just after selection
+
+		if (this.buffer.has_selection) {
+			TextIter beginIter1;
+			TextIter beginIter2;
+			TextIter endIter1;
+			TextIter endIter2;
+			this.buffer.get_selection_bounds(out beginIter1, out endIter1);
+			this.buffer.get_selection_bounds(out beginIter2, out endIter2);
+
+			// Remove from end first
+			// Is 'str' after selection?
+			endIter2.forward_chars(str.length);
+			string txt = this.buffer.get_text(endIter1, endIter2, false);
+			if (txt == str) {
+				this.buffer.@delete(ref endIter1, ref endIter2);
+			} else {
+				// 'str' must be at end of selection
+				endIter2.backward_chars(str.length);
+				endIter1.backward_chars(str.length);
+				txt = this.buffer.get_text(endIter1, endIter2, false);
+				if (txt == str) {
+					this.buffer.@delete(ref endIter1, ref endIter2);
+				}
+			}
+
+			// Recalculate after text change:
+			this.buffer.get_selection_bounds(out beginIter1, out endIter1);
+			this.buffer.get_selection_bounds(out beginIter2, out endIter2);
+
+			// Remove from beginning
+			// Is 'str' at beginning of selection?
+			beginIter2.forward_chars(str.length);
+			txt = this.buffer.get_text(beginIter1, beginIter2, false);
+			if (txt == str) {
+				this.buffer.@delete(ref beginIter1, ref beginIter2);
+			} else {
+				// 'str' must be before selection
+				beginIter1.backward_chars(str.length);
+				beginIter2.backward_chars(str.length);
+				txt = this.buffer.get_text(beginIter1, beginIter2, false);
+				if (txt == str) {
+					this.buffer.@delete(ref beginIter1, ref beginIter2);
+				}
+			}
+		} else {
+			// No selection. Remove 'str' from just before cursor and just after
+		}
+	}
+
+	private bool cursorSurrounded(string str) {
+		if (this.buffer.has_selection) {
+			// Check surrounding selected text
+			TextIter beginIter;
+			TextIter endIter;
+			this.buffer.get_selection_bounds(out beginIter, out endIter);
+			// Get text from iters?
+			string txt = this.buffer.get_text(beginIter, endIter, false);
+			
+			// Does txt contain surroundness?
+			bool left1 = txt.has_prefix(str);
+			bool right1 = txt.has_suffix(str);
+			
+			if (left1 && right1) {
+				return true;
+			} else {
+				// Expand iters, maybe just "word" is selected in "**word**" for example
+				beginIter.backward_chars(str.length);
+				endIter.forward_chars(str.length);
+				txt = this.buffer.get_text(beginIter, endIter, false);
+				bool left2 = txt.has_prefix(str);
+				bool right2 = txt.has_suffix(str);
+				return (left1 || left2) && (right1 || right2);
+			}
+		} else {
+			// No selection, just check if cursor position surrounded
+			// return this.textAtCursorIs(str) && this.textBeforeCursorIs(str);
+		}
+		
+		return false;
+	}
+
+	public void surroundWithOpenAndClose(string open, string close) {
+		if (this.buffer.has_selection) {
+			// Surrounding selected text
+			TextIter beginIter;
+			TextIter endIter;
+			this.buffer.get_selection_bounds(out beginIter, out endIter);
+			this.insertAtIter(beginIter, open);
+			// Need to recalculate endIter...
+			this.buffer.get_selection_bounds(out beginIter, out endIter);
+			this.insertAtIter(endIter, close);
+		} else {
+			// No selection, just surround cursor position
+			this.insertAtCursor(open);
+			this.insertAfterCursor(close);
+		}
 	}
 
 	private string getHeadingStr(int level, bool includeSpace = true) {
@@ -466,4 +573,6 @@ public class MarkdownStrings {
 	public const string BOLD = "**";
 	public const string ITALICS = "_";
 	public const string CODE_TICK = "`";
+	public const string HTML_COMMENT_OPEN = "<!--";
+	public const string HTML_COMMENT_CLOSE = "-->";
 }

@@ -611,13 +611,14 @@ public class Main : Window {
 					}
 					break;
 				case "b":
-					this.editor.markdownSurround(MarkdownStrings.BOLD);
+					this.editor.toggleMarkdownSurround(MarkdownStrings.BOLD);
 					break;
 				case "i":
-					this.editor.markdownSurround(MarkdownStrings.ITALICS);
+					this.editor.toggleMarkdownSurround(MarkdownStrings.ITALICS);
 					break;
 				case "k":
-					this.editor.markdownSurround(MarkdownStrings.CODE_TICK);
+					this.editor.surroundWithOpenAndClose(MarkdownStrings.HTML_COMMENT_OPEN, 
+					                                     MarkdownStrings.HTML_COMMENT_CLOSE);
 					break;
 				case "l":
 					//this.editor.markdownLink();
