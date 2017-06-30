@@ -266,6 +266,7 @@ public class Main : Window {
 
 		this.txtFilter = new Entry();
 
+		txtFilter.has_frame = false;
 		this.txtFilter.buffer.deleted_text.connect(() => {
 			this.filter.setFilterText(this.txtFilter.text);
 			this.loadNotesList("txtFilter text was deleted!");
