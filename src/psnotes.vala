@@ -264,7 +264,7 @@ public class Main : Window {
 
 		
 
-		this.txtFilter = new Entry();
+		this.txtFilter = new SearchEntry();
 
 		txtFilter.has_frame = false;
 		this.txtFilter.buffer.deleted_text.connect(() => {
