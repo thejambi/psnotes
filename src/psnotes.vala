@@ -316,7 +316,6 @@ public class Main : Window {
 		this.notesVBox.pack_start(scroll1, true, true, 2);
 
 		var scroll = new ScrolledWindow (null, null);
-		scroll.shadow_type = ShadowType.ETCHED_OUT;
 		scroll.set_policy (PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
 		scroll.min_content_width = 251;
 		scroll.min_content_height = 280;
