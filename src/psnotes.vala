@@ -425,6 +425,7 @@ public class Main : Window {
 		this.notesView.set_model (listmodel);
 
 		this.notesView.insert_column_with_attributes (-1, "Notes", new CellRendererText (), "text", 0);
+		this.notesView.headers_visible = false;
 
 		var treeSelection = this.notesView.get_selection();
 		
