@@ -480,9 +480,13 @@ public class Main : Window {
 	 }
 
 	private void noteSelected(TreeSelection treeSelection) {
-		if (this.loadingNotes || this.saveRequested) {
-			Zystem.debug("Ignoring note selected due to loadingNotes || saveRequested. lastLoadRequestType: " + this.filter.lastLoadRequestType.to_string());
+		if (this.loadingNotes) {
+			Zystem.debug("Ignoring note selected due to loadingNotes. lastLoadRequestType: " + this.filter.lastLoadRequestType.to_string());
 			return;
+		}
+
+		if (this.saveRequested) {
+			this.saveNonAsync();	// Trying this to call save on current note before changing it.
 		}
 
 		TreeModel model;
@@ -809,6 +813,11 @@ public class Main : Window {
 	}
 
 	private void createNewNote() {
+		if (this.saveRequested) {
+			this.saveNonAsync();	// Trying this to call save on current note before changing it.
+			//return; // Don't create new note if waiting for current note to save.
+		}
+		
 		this.note = new Note("");
 		this.needsSave = false;
 		this.isOpening = true;
@@ -990,6 +999,14 @@ public class Main : Window {
 		this.resetNotesView();
 	}
 
+	private void saveNonAsync() {
+		this.saveRequested = false;
+		if (this.timerId != 0) {
+			Source.remove(this.timerId);
+		}
+		this.note.save(this.editor.getText());
+	}
+
 	/**
 	 * Quit P.S. Notes.
 	 */
@@ -999,7 +1016,7 @@ public class Main : Window {
 		if (this.saveRequested && this.timerId != 0) {
 			Source.remove(this.timerId);
 			
-			this.note.save(this.editor.getText());
+			this.saveNonAsync();
 		}
 
 		// Save window size

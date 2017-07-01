@@ -50,6 +50,12 @@ public class Note : GLib.Object {
 	public void setNoteInfo(string newTitle) {
 		this.title = newTitle;
 		this.filePath = FileUtility.pathCombine(UserData.notesDirPath, this.title + UserData.fileExtension);
+
+		if (this.title.has_prefix("/")) {
+			Zystem.debug("Not setting noteFile for note starting with /");
+			return;
+		}
+		
 		this.noteFile = File.new_for_path(this.filePath);
 	}
 
@@ -117,7 +123,7 @@ public class Note : GLib.Object {
 	}
 
 	private async void saveFileContentsAsync(string text) throws GLib.Error {
-		Zystem.debug("ACTUALLY SAVING FILE");
+		Zystem.debug("ACTUALLY SAVING FILE: " + this.title);
 		yield this.noteFile.replace_contents_async(text.data, null, false, FileCreateFlags.NONE, null, null);
 		//this.loadedContents = text;
 	}
@@ -131,7 +137,7 @@ public class Note : GLib.Object {
 	}
 
 	private void saveFileContents(string text) {
-		Zystem.debug("ACTUALLY SAVING FILE");
+		Zystem.debug("ACTUALLY SAVING FILE: " + this.title);
 		
 		try {
 			this.noteFile.replace_contents(text.data, null, false, FileCreateFlags.NONE, null, null);

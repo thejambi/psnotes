@@ -43,6 +43,13 @@ class Zystem : GLib.Object {
 	}
 
 	/**
+	 * Debug method. Prints no matter what.
+	 */
+	/*public static void debugX(string s) {
+		stdout.printf(s + "\n");
+	}*/
+
+	/**
 	 * 
 	 */
 	public static void debugFileInfo(FileInfo file) {
