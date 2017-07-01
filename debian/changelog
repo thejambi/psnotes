@@ -1,5 +1,5 @@
-com.github.thejambi.psnotes (0.17) precise; urgency=low
+com.github.thejambi.psnotes (0.18) precise; urgency=low
 
-  * Markdown editing shortcuts enhancements.
+  * Performance updates and enhancements; cleaner looks.
 
  -- Zach Burnham <thejambi@gmail.com>  Wed, 17 May 2017 04:53:39 -0500
