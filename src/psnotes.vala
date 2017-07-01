@@ -264,8 +264,9 @@ public class Main : Window {
 
 		
 
-		this.txtFilter = new Entry();
+		this.txtFilter = new SearchEntry();
 
+		txtFilter.has_frame = false;
 		this.txtFilter.buffer.deleted_text.connect(() => {
 			this.filter.setFilterText(this.txtFilter.text);
 			this.loadNotesList("txtFilter text was deleted!");
@@ -315,7 +316,6 @@ public class Main : Window {
 		this.notesVBox.pack_start(scroll1, true, true, 2);
 
 		var scroll = new ScrolledWindow (null, null);
-		scroll.shadow_type = ShadowType.ETCHED_OUT;
 		scroll.set_policy (PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
 		scroll.min_content_width = 251;
 		scroll.min_content_height = 280;
@@ -424,6 +424,7 @@ public class Main : Window {
 		this.notesView.set_model (listmodel);
 
 		this.notesView.insert_column_with_attributes (-1, "Notes", new CellRendererText (), "text", 0);
+		this.notesView.headers_visible = false;
 
 		var treeSelection = this.notesView.get_selection();
 		
