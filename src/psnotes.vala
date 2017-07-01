@@ -686,7 +686,10 @@ public class Main : Window {
 
 		// Handle escape key
 		if (!(ctrl || shift) && keyName == "Escape") {
-			if (this.txtFilter.has_focus) {
+			if (this.menuWriteMode.active) {
+				this.menuWriteMode.active = !this.menuWriteMode.active;
+				this.toggleWriteMode();
+			} else if (this.txtFilter.has_focus) {
 				this.txtFilter.text = "";
 			} else {
 				this.txtFilter.grab_focus();
