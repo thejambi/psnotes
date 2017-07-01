@@ -141,14 +141,18 @@ class UserData : Object {
 		settings.setBool(UserSettingsManager.altSortTypeKey, altSort);
 		useAltSortType = altSort;
 		Zystem.debug("Use alt sort: " + altSort.to_string());
-		if (UserData.inBook || UserData.inChapter) {
+		/*if (inNovelWork()) {
 			useAltSortType = false;
-		}
+		}*/
 	}
 
 	public static void setFileExtension(string ext) {
 		fileExtension = ext;
 		settings.setString(UserSettingsManager.fileExtKey, ext);
+	}
+
+	public static bool inNovelWork() {
+		return UserData.inBook || UserData.inChapter;
 	}
 
 	

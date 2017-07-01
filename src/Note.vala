@@ -18,6 +18,13 @@ PSNotes is free software: you can redistribute it and/or modify it
  */
 
 public class Note : GLib.Object {
+
+	private const int RENAME_AFTER_THIS_MANY_MILLISECONDS = 300;
+
+	private string renameNoteTitle;
+	private string renameText;
+	private uint timerId;
+	private bool renameRequested;
 	
 	public string title { get; private set; }
 	public string filePath { get; private set; }
@@ -61,7 +68,33 @@ public class Note : GLib.Object {
 		}
 	}
 
-	public void rename(string noteTitle, string text) {
+	public void setToRename(string noteTitle, string text) {
+		if (!this.renameRequested) {
+			this.renameNoteTitle = noteTitle;
+			this.renameText = text;
+			this.timerId = Timeout.add(RENAME_AFTER_THIS_MANY_MILLISECONDS, onTimerEvent);
+			Zystem.debug("Set Rename timer!");
+		} else {
+			// Reset timer
+			Zystem.debug("Resetting Rename timer!");
+			Source.remove(this.timerId);
+			this.renameRequested = false;
+			this.setToRename(noteTitle, text);
+		}
+
+		this.renameRequested = true;
+	}
+
+	public bool onTimerEvent() {
+		Zystem.debug("Timer event. Calling rename.");
+		this.rename(this.renameNoteTitle, this.renameText);
+
+		this.renameRequested = false;
+		
+		return false;
+	}
+
+	private void rename(string noteTitle, string text) {
 		// Don't let there be a filename that is too long
 		string newTitle = this.trimBadStuffFromTitle(noteTitle);
 		if (noteTitle.length > 200) {

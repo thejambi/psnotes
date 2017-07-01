@@ -24,6 +24,9 @@ public class Main : Window {
 	// SET THIS TO TRUE BEFORE BUILDING TARBALL
 	private const bool isInstalled = true;
 
+	/* This long between user stop typing and save of note file. */
+	private const int SAVE_AFTER_THIS_MANY_MILLISECONDS = 800;
+
 	private const string shortcutsText = 
 			"Ctrl+N: Create a new note\n" + 
 			"Ctrl+F: Jump to filter box to search note titles\n" + 
@@ -64,6 +67,7 @@ public class Main : Window {
 	private Gtk.Box notesVBox;
 	private Gtk.HeaderBar headerBar;
 	private Gtk.CheckMenuItem menuWriteMode;
+	private Gtk.CheckMenuItem menuSortLastModified;
 
 	private NotesMonitor notesMonitor;
 	private FileMonitor fileMon;
@@ -197,7 +201,7 @@ public class Main : Window {
 				this.chooseFont();
 			});
 
-			var menuSortLastModified = new Gtk.CheckMenuItem.with_label("Sort by recently modified");
+			this.menuSortLastModified = new Gtk.CheckMenuItem.with_label("Sort by recently modified");
 			menuSortLastModified.active = UserData.useAltSortType;
 			menuSortLastModified.activate.connect(() => {
 				this.sortToggled(menuSortLastModified);
@@ -269,13 +273,13 @@ public class Main : Window {
 		txtFilter.has_frame = false;
 		this.txtFilter.buffer.deleted_text.connect(() => {
 			this.filter.setFilterText(this.txtFilter.text);
-			this.loadNotesList("txtFilter text was deleted!");
-//			this.filter.setToLoad(LoadRequestType.filterTextChanged);
+			//this.loadNotesList("txtFilter text was deleted!");
+			this.filter.setToLoad(LoadRequestType.filterTextChanged);
 		});
 		this.txtFilter.buffer.inserted_text.connect(() => {
 			this.filter.setFilterText(this.txtFilter.text);
-			this.loadNotesList("txtFilter text was inserted!");
-//			this.filter.setToLoad(LoadRequestType.filterTextChanged);
+			//this.loadNotesList("txtFilter text was inserted!");
+			this.filter.setToLoad(LoadRequestType.filterTextChanged);
 		});
 
 		this.notesView = new TreeView();
@@ -316,6 +320,7 @@ public class Main : Window {
 		this.notesVBox.pack_start(scroll1, true, true, 2);
 
 		var scroll = new ScrolledWindow (null, null);
+		//scroll.shadow_type = ShadowType.ETCHED_OUT;
 		scroll.set_policy (PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
 		scroll.min_content_width = 251;
 		scroll.min_content_height = 280;
@@ -362,10 +367,10 @@ public class Main : Window {
 
 	private void addImageNow() {
 		/* Images! */
-		Image img = new Image.from_file("/home/zach/Dropbox/Pictures/Lego_avatar.png");
-		var anchor = this.editor.buffer.create_child_anchor(this.editor.getCurrentIter());
+		//Image img = new Image.from_file("/home/zach/Dropbox/Pictures/FyeOQmyf.jpg");
+		//var anchor = this.editor.buffer.create_child_anchor(this.editor.getCurrentIter());
 		//this.noteTextView.add_child_at_anchor(img, anchor);
-		img.show_now();
+		//img.show_now();
 	}
 
 	private void setOpenNotebooksMenuItems() {
@@ -475,7 +480,8 @@ public class Main : Window {
 	 }
 
 	private void noteSelected(TreeSelection treeSelection) {
-		if (this.loadingNotes) {
+		if (this.loadingNotes || this.saveRequested) {
+			Zystem.debug("Ignoring note selected due to loadingNotes || saveRequested. lastLoadRequestType: " + this.filter.lastLoadRequestType.to_string());
 			return;
 		}
 
@@ -484,9 +490,20 @@ public class Main : Window {
 		treeSelection.get_selected(out model, out iter);
 		Value val;
 		model.get_value(iter, 0, out val);
-		Zystem.debug("SELECTION IS: " + val.get_string());
+		Zystem.debug("SELECTION IS: _" + val.get_string() + "_");
 
 		string noteTitle = val.get_string();
+
+		/* A bad bug that causes duplicate files to be created during renaming notes is worked around by this return.
+		 * Somehow a null selection gets selected and this.note ends up being null, and during renaming the note, 
+		 * it thinks it needs to create a new file.
+		 */
+		if (noteTitle == null
+		    && (this.filter.lastLoadRequestType == LoadRequestType.fileMonitorEvent
+				|| this.filter.lastLoadRequestType == LoadRequestType.noteRename)) {
+			Zystem.debug("Ignoring note selected. lastLoadRequestType: " + this.filter.lastLoadRequestType.to_string());
+			return;
+		}
 
 		if (noteTitle == UserData.upToBook) {
 			Zystem.debug("Return to Book Root selected");
@@ -517,6 +534,8 @@ public class Main : Window {
 			this.needsSave = false;
 
 			this.isOpening = false;
+
+			Zystem.debug("New note opened. lastLoadRequestType: " + this.filter.lastLoadRequestType.to_string());
 		}
 	}
 
@@ -599,7 +618,10 @@ public class Main : Window {
 					this.clearFontPrefs();
 					break;
 				case "p":
-					this.addImageNow();
+					//this.addImageNow();
+					break;
+				case "s":
+					this.toggleSortManually();
 					break;
 				case "w":
 					this.menuWriteMode.active = !this.menuWriteMode.active;
@@ -699,13 +721,12 @@ public class Main : Window {
 		this.get_size(out nowWidth, out nowHeight);
 		
 		if (this.width == nowWidth && this.height == nowHeight) {
-			Zystem.debug("THE UNNNNN maximizedBOOOOOGABOOGA");
+			Zystem.debug("Not maximized");
 		} else if (Gdk.WindowState.MAXIMIZED in this.get_window().get_state()) {
-			Zystem.debug("EL MAXIMIZEDDD");
+			Zystem.debug("WindowState: Maximized");
 		}
 	}
 
-	//public void onTextChanged(TextBuffer buffer) {
 	public void onTextChanged(DocumentView docView) {
 		this.updateWordCount();
 		
@@ -717,7 +738,7 @@ public class Main : Window {
 
 		if (this.note == null && this.editor.getText() != "") {
 			// If creating a new note
-			Zystem.debug("NOTE IS NULL, thank you very much!");
+			Zystem.debug("Note is null.");
 			Zystem.debug("Note title should be: " + this.editor.firstLine());
 			this.note = new Note(this.editor.firstLine().strip());
 			this.loadNotesList("Creating a new note!");
@@ -727,15 +748,17 @@ public class Main : Window {
 		} else if (this.editor.lineCount() > 0 && this.editor.firstLine().strip() != ""
 				&& this.noteTitleChanged()) {
 			// If note title changed
-			Source.remove(this.timerId);	// TRY THAT! (This should fix the duplicate file issue)
-			Zystem.debug("Oh boy, the note title changed. Let's rename that sucker.");
-			this.note.rename(this.editor.firstLine().strip(), this.editor.getText());
-			this.loadNotesList("Note title changed!");
+			Source.remove(this.timerId);	// (This should fix the duplicate file issue?)
+			Zystem.debug("The note title changed. Let's rename it.");
+			this.note.setToRename(this.editor.firstLine().strip(), this.editor.getText());
+			this.filter.setToLoad(LoadRequestType.noteRename);
+			//this.loadNotesList("Note title changed!");
 			this.filter.notifyAutoSave();
 			this.firstLine = this.editor.firstLine();
-			Zystem.debug("I REPEAT - NOTE TITLE HAS BEEN CHANGED!!!");
+			Zystem.debug("NOTE TITLE HAS BEEN CHANGED");
+			this.needsSave = false;
 		} else {
-			Zystem.debug("ZLB NEW - CALLING REQUEST SAVE");
+			Zystem.debug("CALLING REQUEST SAVE");
 			this.requestSave();
 		}
 	}
@@ -751,8 +774,14 @@ public class Main : Window {
 
 	private void requestSave() {
 		if (!this.saveRequested) {
-			this.timerId = Timeout.add(200, onTimerEvent);
+			this.timerId = Timeout.add(SAVE_AFTER_THIS_MANY_MILLISECONDS, onTimerEvent);
 			Zystem.debug("Set timer for SAVE!");
+		} else {
+			// Reset timer
+			Zystem.debug("Resetting SAVE timer");
+			Source.remove(this.timerId);
+			this.saveRequested = false;
+			this.requestSave();
 		}
 
 		this.saveRequested = true;
@@ -950,11 +979,20 @@ public class Main : Window {
 		this.resetNotesView();
 	}
 
+	private void toggleSortManually() {
+		this.menuSortLastModified.active = !this.menuSortLastModified.active;
+		UserData.setUseAltSortType(this.menuSortLastModified.active);
+		this.loadNotesList("Sort type was toggled to: " + this.menuSortLastModified.active.to_string());
+		//this.setupNotesView();
+		this.resetNotesView();
+	}
+
 	/**
 	 * Quit P.S. Notes.
 	 */
 	public void on_destroy () {
 
+		/* Save note before closing if save requested and timer set */
 		if (this.saveRequested && this.timerId != 0) {
 			Source.remove(this.timerId);
 			

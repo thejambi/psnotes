@@ -23,20 +23,27 @@ public enum LoadRequestType {
 	autoSaved,
 	fileMonitorEvent,
 	filterTextChanged,
+	noteRename,
 	otherType;
 }
 
 public class NotesFilter : GLib.Object {
+
+	/* 300 tested to be good. */
+	private const int LOAD_AFTER_THIS_MANY_MILLISECONDS = 300;
 
 	private weak Gtk.ListStore listmodel;
 	private weak TreeSelection treeSelection;
 
 	private int reloadCount;
 
+	public LoadRequestType lastLoadRequestType { get; private set; }
 	private bool loadRequested;
 	private bool noLoad;
 
 	private string filterText;
+
+	private uint timerId;
 	
 	// Constructor
 	public NotesFilter(Gtk.ListStore listmodel, TreeSelection treeSelection) {
@@ -67,6 +74,7 @@ public class NotesFilter : GLib.Object {
 			listmodel.set_sort_column_id(0, SortType.ASCENDING);
 			
 			if (UserData.useAltSortType) {
+				Zystem.debug("Sorting list");
 				listmodel.set_sort_func(0, (model, iterA, iterB) => {
 					Value value;
 					model.get_value(iterA, 0, out value);
@@ -97,7 +105,7 @@ public class NotesFilter : GLib.Object {
 			File notesDir = File.new_for_path(UserData.notesDirPath);
 			FileEnumerator enumerator = notesDir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 			FileInfo fileInfo;
-
+			
 			UserData.inBook = false;
 
 			if (UserData.inChapter) {
@@ -148,9 +156,7 @@ public class NotesFilter : GLib.Object {
 						listmodel.set(iter, 0, UserData.chapterKey + fileInfo.get_name());
 					}
 				} else {
-					Zystem.debug("I'm an ELSE!");
 					if (FileUtility.isDirectory(FileUtility.pathCombine(UserData.notesDirPath, fileInfo.get_name()))) {
-						Zystem.debug("I'm an FolderRRR!");
 						listmodel.append(out iter);
 						listmodel.set(iter, 0, UserData.folderKey + fileInfo.get_name());
 					}
@@ -180,14 +186,17 @@ public class NotesFilter : GLib.Object {
 		return false;
 	}
 
-
 	public void setToLoad(LoadRequestType requestType) {
-//		Zystem.debug(requestType.to_string());
 		if (!this.loadRequested && requestType != LoadRequestType.autoSaved) {
-			var timerId = Timeout.add(1000, onTimerEvent);
-			Zystem.debug("Set timer!");
-		} else {
-			Zystem.debug("No Timer Set! Take THAT!");
+			this.lastLoadRequestType = requestType;
+			this.timerId = Timeout.add(LOAD_AFTER_THIS_MANY_MILLISECONDS, onTimerEvent);
+			Zystem.debug("Set Load timer! " + requestType.to_string());
+		} else if (requestType != LoadRequestType.autoSaved) {
+			// Reset timer
+			Zystem.debug("Resetting Load timer!");
+			Source.remove(this.timerId);
+			this.loadRequested = false;
+			this.setToLoad(requestType);
 		}
 
 		this.loadRequested = true;
