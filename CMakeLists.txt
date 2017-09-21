@@ -33,7 +33,7 @@ include(ValaVersion)
 ensure_vala_version("0.16" MINIMUM)
 
 include(ValaPrecompile)
-vala_precompile(VALA_C ${EXEC_NAME}
+vala_precompile(VALA_C
     src/psnotes.vala
     src/FileUtility.vala
     src/HyperTextView.vala
